@@ -42,11 +42,9 @@ def render():
     projects = session.query(Project).all()
     facilities = session.query(Facility).all()
 
-    # ── Controls ──────────────────────────────────────────────────────────────
-    ctrl_col, map_col = st.columns([1, 4])
-
-    with ctrl_col:
-        st.subheader("Layer Controls")
+    # ── Controls in sidebar ─────────────────────────────────────────────────
+    with st.sidebar:
+        st.subheader("🗺️ Layer Controls")
 
         show_gsdf = st.checkbox("GSDF 2030 Zones", value=True)
         show_pop = st.checkbox("Population Density", value=False)
@@ -61,93 +59,84 @@ def render():
         buffer_radius = st.slider("Buffer radius (km)", 1, 20, 5)
 
         st.divider()
-        st.subheader("Map Style")
-        map_theme = st.selectbox("Theme", ["CartoDB Light", "OpenStreetMap"])
-
-        st.divider()
-        st.subheader("Municipality Filter")
+        st.subheader("Filters")
         municipalities = sorted({p.municipality for p in projects if p.municipality})
-        selected_muni = st.multiselect("Filter by municipality", municipalities,
+        selected_muni = st.multiselect("Municipality", municipalities,
                                         default=municipalities)
+        min_score = st.slider("Min STAM score", 0, 100, 0)
+        max_score = st.slider("Max STAM score", 0, 100, 100)
 
-        st.divider()
-        st.subheader("Score Filter")
-        min_score = st.slider("Minimum STAM score", 0, 100, 0)
-        max_score = st.slider("Maximum STAM score", 0, 100, 100)
+    # ── Filter projects ──────────────────────────────────────────────────────
+    filtered = [
+        p for p in projects
+        if (not selected_muni or p.municipality in selected_muni)
+        and (p.total_score or 0) >= min_score
+        and (p.total_score or 0) <= max_score
+    ]
 
-    with map_col:
-        # Filter projects
-        filtered = [
-            p for p in projects
-            if (not selected_muni or p.municipality in selected_muni)
-            and (p.total_score or 0) >= min_score
-            and (p.total_score or 0) <= max_score
-        ]
+    # ── Build map (full width) ───────────────────────────────────────────────
+    gsdf_path = os.path.join(DEMO_DIR, "gsdf_zones.geojson")
+    pop_path = os.path.join(DEMO_DIR, "population.geojson")
 
-        # Build map
-        gsdf_path = os.path.join(DEMO_DIR, "gsdf_zones.geojson")
-        pop_path = os.path.join(DEMO_DIR, "population.geojson")
+    m = make_base_map()
 
-        m = make_base_map()
+    if show_gsdf:
+        m = add_gsdf_layer(m, gsdf_path)
+    if show_pop:
+        m = add_population_layer(m, pop_path)
+    if show_facilities:
+        m = add_facilities_layer(m, facilities)
+    if show_projects:
+        m = add_projects_layer(m, filtered)
+    if show_heatmap:
+        m = add_heatmap_layer(m, filtered)
 
-        if show_gsdf:
-            m = add_gsdf_layer(m, gsdf_path)
-        if show_pop:
-            m = add_population_layer(m, pop_path)
-        if show_facilities:
-            m = add_facilities_layer(m, facilities)
-        if show_projects:
-            m = add_projects_layer(m, filtered)
-        if show_heatmap:
-            m = add_heatmap_layer(m, filtered)
-
-        # Buffer
-        buffer_results = []
-        if buffer_proj != "None":
-            bp = project_names[buffer_proj]
-            m = add_project_buffer(m, bp.latitude, bp.longitude,
-                                    buffer_radius, bp.name)
-            # Drop pin for selected project
-            folium.Marker(
-                location=[bp.latitude, bp.longitude],
-                popup=f"<b>{bp.name}</b><br>Buffer: {buffer_radius} km",
-                icon=folium.Icon(color="darkblue", icon="star", prefix="fa"),
-            ).add_to(m)
-            buffer_results = facilities_within_buffer(
-                bp.latitude, bp.longitude, buffer_radius, facilities
-            )
-            log_action("BUFFER_ANALYSIS", "project", bp.project_id,
-                       {"radius_km": buffer_radius, "facilities_found": len(buffer_results)},
-                       user_role=st.session_state.get("user_role", "Analyst"))
-
-        # GSDF legend
-        legend_html = (
-            "<div style='position:fixed;bottom:30px;left:30px;z-index:1000;"
-            "background:white;padding:10px;border-radius:8px;border:1px solid #ccc;"
-            "font-size:12px;min-width:180px;color:#1a1a1a;box-shadow:0 2px 6px rgba(0,0,0,0.2)'>"
-            "<b style='color:#1a1a1a'>2030 Classification</b><br>"
+    # Buffer
+    buffer_results = []
+    if buffer_proj != "None":
+        bp = project_names[buffer_proj]
+        m = add_project_buffer(m, bp.latitude, bp.longitude,
+                                buffer_radius, bp.name)
+        folium.Marker(
+            location=[bp.latitude, bp.longitude],
+            popup=f"<b>{bp.name}</b><br>Buffer: {buffer_radius} km",
+            icon=folium.Icon(color="darkblue", icon="star", prefix="fa"),
+        ).add_to(m)
+        buffer_results = facilities_within_buffer(
+            bp.latitude, bp.longitude, buffer_radius, facilities
         )
-        for cls, colour in GSDF_COLOURS.items():
-            legend_html += (
-                f"<div style='display:flex;align-items:center;margin:3px 0'>"
-                f"<span style='background:{colour};display:inline-block;flex-shrink:0;"
-                f"width:14px;height:14px;margin-right:6px;border-radius:2px;border:1px solid #ccc'></span>"
-                f"<span style='color:#1a1a1a'>{cls}</span></div>"
-            )
-        legend_html += "<div style='margin:6px 0 3px;border-top:1px solid #ddd;padding-top:4px'><b style='color:#1a1a1a'>Project Score</b></div>"
-        for cls, colour in SCORE_COLOURS.items():
-            legend_html += (
-                f"<div style='display:flex;align-items:center;margin:3px 0'>"
-                f"<span style='background:{colour};display:inline-block;flex-shrink:0;"
-                f"width:12px;height:12px;margin-right:6px;border-radius:50%'></span>"
-                f"<span style='color:#1a1a1a'>{cls}</span></div>"
-            )
-        legend_html += "</div>"
-        m.get_root().html.add_child(folium.Element(legend_html))
+        log_action("BUFFER_ANALYSIS", "project", bp.project_id,
+                   {"radius_km": buffer_radius, "facilities_found": len(buffer_results)},
+                   user_role=st.session_state.get("user_role", "Analyst"))
 
-        folium.LayerControl(collapsed=False).add_to(m)
+    # GSDF legend
+    legend_html = (
+        "<div style='position:fixed;bottom:30px;left:30px;z-index:1000;"
+        "background:white;padding:10px;border-radius:8px;border:1px solid #ccc;"
+        "font-size:12px;min-width:180px;color:#1a1a1a;box-shadow:0 2px 6px rgba(0,0,0,0.2)'>"
+        "<b style='color:#1a1a1a'>GSDF 2030 Classification</b><br>"
+    )
+    for cls, colour in GSDF_COLOURS.items():
+        legend_html += (
+            f"<div style='display:flex;align-items:center;margin:3px 0'>"
+            f"<span style='background:{colour};display:inline-block;flex-shrink:0;"
+            f"width:14px;height:14px;margin-right:6px;border-radius:2px;border:1px solid #ccc'></span>"
+            f"<span style='color:#1a1a1a'>{cls}</span></div>"
+        )
+    legend_html += "<div style='margin:6px 0 3px;border-top:1px solid #ddd;padding-top:4px'><b style='color:#1a1a1a'>Project Score</b></div>"
+    for cls, colour in SCORE_COLOURS.items():
+        legend_html += (
+            f"<div style='display:flex;align-items:center;margin:3px 0'>"
+            f"<span style='background:{colour};display:inline-block;flex-shrink:0;"
+            f"width:12px;height:12px;margin-right:6px;border-radius:50%'></span>"
+            f"<span style='color:#1a1a1a'>{cls}</span></div>"
+        )
+    legend_html += "</div>"
+    m.get_root().html.add_child(folium.Element(legend_html))
 
-        map_data = st_folium(m, use_container_width=True, height=620, returned_objects=["last_object_clicked"])
+    folium.LayerControl(collapsed=False).add_to(m)
+
+    map_data = st_folium(m, use_container_width=True, height=700, returned_objects=["last_object_clicked"])
 
     # ── Buffer results ────────────────────────────────────────────────────────
     if buffer_proj != "None" and buffer_results:
