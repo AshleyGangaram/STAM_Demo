@@ -17,10 +17,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from services.db import init_db
+from services.db import Project, init_db, get_session
 
 # Initialise database on first run
 init_db()
+
+# Auto-seed demo data if DB is empty (needed for Streamlit Cloud)
+_session = get_session()
+if _session.query(Project).count() == 0:
+    _session.close()
+    from data.seed import seed_database
+    seed_database()
+else:
+    _session.close()
 
 st.set_page_config(
     page_title="STAM — Gauteng Capital Budget Appraisal",

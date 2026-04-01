@@ -26,10 +26,22 @@ ANALYSIS_MODEL = "claude-sonnet-4-6"
 PARSING_MODEL = "claude-haiku-4-5-20251001"
 
 
+def _get_api_key() -> str:
+    """Resolve API key from Streamlit secrets (cloud) or env var (local)."""
+    try:
+        import streamlit as st
+        key = st.secrets.get("ANTHROPIC_API_KEY", "")
+        if key:
+            return key
+    except Exception:
+        pass
+    return os.environ.get("ANTHROPIC_API_KEY", "")
+
+
 def _client() -> anthropic.Anthropic:
-    key = os.environ.get("ANTHROPIC_API_KEY", "")
+    key = _get_api_key()
     if not key:
-        raise ValueError("ANTHROPIC_API_KEY not set. Copy .env.example to .env and add your key.")
+        raise ValueError("ANTHROPIC_API_KEY not set. Add it to Streamlit secrets or .env file.")
     return anthropic.Anthropic(api_key=key)
 
 
