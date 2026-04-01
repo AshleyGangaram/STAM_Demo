@@ -1,0 +1,37 @@
+[app]
+title = "STAM — Spatial Transformation Appraisal Mechanism"
+subtitle = "Gauteng Province Capital Budget Decision Support Platform"
+company = "VITAL TERRA / Vastpoint"
+version = "1.0.0-POC"
+
+[ai]
+analysis_model = "claude-sonnet-4-6"
+parsing_model  = "claude-haiku-4-5-20251001"
+
+[paths]
+db_path    = "data/stam.db"
+upload_dir = "data/uploads"
+export_dir = "data/exports"
+demo_dir   = "data/demo"
+
+[scoring]
+# Default STAM scoring weights (total = 100)
+gsdf_overlap     = 20
+msdf_priority    = 15
+service_gap      = 20
+transport_access = 10
+brownfield       = 10
+readiness        = 15
+cost_efficiency  = 10
+
+[scoring.bands]
+priority_now   = 80
+priority_next  = 65
+conditional    = 50
+# below 50 = Not Recommended
+
+[map]
+center_lat = -26.05
+center_lon = 28.05
+default_zoom = 9
+gauteng_bbox = [-28.0, 26.5, -25.0, 29.5]

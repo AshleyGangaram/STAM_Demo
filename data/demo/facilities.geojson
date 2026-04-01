@@ -1,0 +1,385 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.21,
+          -26.018
+        ]
+      },
+      "properties": {
+        "name": "Tembisa Main Clinic",
+        "facility_type": "clinic",
+        "capacity": 400,
+        "current_occupancy": 420,
+        "municipality": "Ekurhuleni",
+        "ward": "Ward 12",
+        "occupancy_pct": 105.0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.202,
+          -25.985
+        ]
+      },
+      "properties": {
+        "name": "Ivory Park Clinic",
+        "facility_type": "clinic",
+        "capacity": 300,
+        "current_occupancy": 280,
+        "municipality": "Ekurhuleni",
+        "ward": "Ward 9",
+        "occupancy_pct": 93.3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.095,
+          -26.104
+        ]
+      },
+      "properties": {
+        "name": "Alexandra Clinic",
+        "facility_type": "clinic",
+        "capacity": 500,
+        "current_occupancy": 490,
+        "municipality": "City of Johannesburg",
+        "ward": "Ward 82",
+        "occupancy_pct": 98.0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.88,
+          -26.285
+        ]
+      },
+      "properties": {
+        "name": "Soweto Chiawelo Clinic",
+        "facility_type": "clinic",
+        "capacity": 350,
+        "current_occupancy": 330,
+        "municipality": "City of Johannesburg",
+        "ward": "Ward 10",
+        "occupancy_pct": 94.3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.388,
+          -25.71
+        ]
+      },
+      "properties": {
+        "name": "Mamelodi Clinic",
+        "facility_type": "clinic",
+        "capacity": 450,
+        "current_occupancy": 460,
+        "municipality": "City of Tshwane",
+        "ward": "Ward 94",
+        "occupancy_pct": 102.2
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.148,
+          -26.362
+        ]
+      },
+      "properties": {
+        "name": "Katlehong Clinic",
+        "facility_type": "clinic",
+        "capacity": 300,
+        "current_occupancy": 320,
+        "municipality": "Ekurhuleni",
+        "ward": "Ward 41",
+        "occupancy_pct": 106.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.968,
+          -26.025
+        ]
+      },
+      "properties": {
+        "name": "Diepsloot Clinic",
+        "facility_type": "clinic",
+        "capacity": 250,
+        "current_occupancy": 310,
+        "municipality": "City of Johannesburg",
+        "ward": "Ward 94",
+        "occupancy_pct": 124.0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.832,
+          -26.49
+        ]
+      },
+      "properties": {
+        "name": "Orange Farm Clinic",
+        "facility_type": "clinic",
+        "capacity": 280,
+        "current_occupancy": 350,
+        "municipality": "City of Johannesburg",
+        "ward": "Ward 5",
+        "occupancy_pct": 125.0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.22,
+          -26.009
+        ]
+      },
+      "properties": {
+        "name": "Tembisa Secondary School",
+        "facility_type": "school",
+        "capacity": 1200,
+        "current_occupancy": 1350,
+        "municipality": "Ekurhuleni",
+        "ward": "Ward 13",
+        "occupancy_pct": 112.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.965,
+          -26.008
+        ]
+      },
+      "properties": {
+        "name": "Diepsloot Secondary",
+        "facility_type": "school",
+        "capacity": 800,
+        "current_occupancy": 1050,
+        "municipality": "City of Johannesburg",
+        "ward": "Ward 95",
+        "occupancy_pct": 131.2
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.165,
+          -26.344
+        ]
+      },
+      "properties": {
+        "name": "Katlehong High School",
+        "facility_type": "school",
+        "capacity": 1100,
+        "current_occupancy": 1380,
+        "municipality": "Ekurhuleni",
+        "ward": "Ward 43",
+        "occupancy_pct": 125.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.392,
+          -25.695
+        ]
+      },
+      "properties": {
+        "name": "Mamelodi East Secondary",
+        "facility_type": "school",
+        "capacity": 900,
+        "current_occupancy": 870,
+        "municipality": "City of Tshwane",
+        "ward": "Ward 96",
+        "occupancy_pct": 96.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.862,
+          -26.279
+        ]
+      },
+      "properties": {
+        "name": "Soweto High School Naledi",
+        "facility_type": "school",
+        "capacity": 1000,
+        "current_occupancy": 980,
+        "municipality": "City of Johannesburg",
+        "ward": "Ward 12",
+        "occupancy_pct": 98.0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.08,
+          -26.109
+        ]
+      },
+      "properties": {
+        "name": "Alexandra Secondary School",
+        "facility_type": "school",
+        "capacity": 1100,
+        "current_occupancy": 1250,
+        "municipality": "City of Johannesburg",
+        "ward": "Ward 80",
+        "occupancy_pct": 113.6
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.213,
+          -26.012
+        ]
+      },
+      "properties": {
+        "name": "Tembisa Public Library",
+        "facility_type": "library",
+        "capacity": 200,
+        "current_occupancy": 120,
+        "municipality": "Ekurhuleni",
+        "ward": "Ward 13",
+        "occupancy_pct": 60.0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.089,
+          -26.1
+        ]
+      },
+      "properties": {
+        "name": "Alexandra Public Library",
+        "facility_type": "library",
+        "capacity": 150,
+        "current_occupancy": 90,
+        "municipality": "City of Johannesburg",
+        "ward": "Ward 81",
+        "occupancy_pct": 60.0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.895,
+          -26.255
+        ]
+      },
+      "properties": {
+        "name": "Soweto Meadowlands Library",
+        "facility_type": "library",
+        "capacity": 180,
+        "current_occupancy": 110,
+        "municipality": "City of Johannesburg",
+        "ward": "Ward 16",
+        "occupancy_pct": 61.1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.961,
+          -26.021
+        ]
+      },
+      "properties": {
+        "name": "Diepsloot Community Hall",
+        "facility_type": "community_hall",
+        "capacity": 500,
+        "current_occupancy": 250,
+        "municipality": "City of Johannesburg",
+        "ward": "Ward 94",
+        "occupancy_pct": 50.0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.838,
+          -26.482
+        ]
+      },
+      "properties": {
+        "name": "Orange Farm Community Hall",
+        "facility_type": "community_hall",
+        "capacity": 400,
+        "current_occupancy": 320,
+        "municipality": "City of Johannesburg",
+        "ward": "Ward 4",
+        "occupancy_pct": 80.0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.85,
+          -26.525
+        ]
+      },
+      "properties": {
+        "name": "Evaton Community Hall",
+        "facility_type": "community_hall",
+        "capacity": 350,
+        "current_occupancy": 200,
+        "municipality": "Sedibeng",
+        "ward": "Ward 8",
+        "occupancy_pct": 57.1
+      }
+    }
+  ]
+}

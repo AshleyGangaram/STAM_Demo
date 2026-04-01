@@ -1,0 +1,338 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              28.05,
+              -26.05
+            ],
+            [
+              28.25,
+              -26.05
+            ],
+            [
+              28.25,
+              -25.95
+            ],
+            [
+              28.05,
+              -25.95
+            ],
+            [
+              28.05,
+              -26.05
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "ward_name": "Tembisa Wards 12-15",
+        "municipality": "Ekurhuleni",
+        "population": 185000,
+        "area_km2": 22,
+        "density_per_km2": 8409
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              28.06,
+              -26.15
+            ],
+            [
+              28.12,
+              -26.15
+            ],
+            [
+              28.12,
+              -26.08
+            ],
+            [
+              28.06,
+              -26.08
+            ],
+            [
+              28.06,
+              -26.15
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "ward_name": "Alexandra Wards 79-82",
+        "municipality": "City of Johannesburg",
+        "population": 75000,
+        "area_km2": 5,
+        "density_per_km2": 15000
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              27.83,
+              -26.35
+            ],
+            [
+              27.98,
+              -26.35
+            ],
+            [
+              27.98,
+              -26.22
+            ],
+            [
+              27.83,
+              -26.22
+            ],
+            [
+              27.83,
+              -26.35
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "ward_name": "Soweto North Wards 10-16",
+        "municipality": "City of Johannesburg",
+        "population": 210000,
+        "area_km2": 42,
+        "density_per_km2": 5000
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              27.9,
+              -26.05
+            ],
+            [
+              28.02,
+              -26.05
+            ],
+            [
+              28.02,
+              -25.97
+            ],
+            [
+              27.9,
+              -25.97
+            ],
+            [
+              27.9,
+              -26.05
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "ward_name": "Diepsloot Wards 94-95",
+        "municipality": "City of Johannesburg",
+        "population": 95000,
+        "area_km2": 10,
+        "density_per_km2": 9500
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              28.12,
+              -26.4
+            ],
+            [
+              28.22,
+              -26.4
+            ],
+            [
+              28.22,
+              -26.28
+            ],
+            [
+              28.12,
+              -26.28
+            ],
+            [
+              28.12,
+              -26.4
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "ward_name": "Katlehong Wards 40-44",
+        "municipality": "Ekurhuleni",
+        "population": 140000,
+        "area_km2": 17,
+        "density_per_km2": 8235
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              28.32,
+              -25.75
+            ],
+            [
+              28.43,
+              -25.75
+            ],
+            [
+              28.43,
+              -25.65
+            ],
+            [
+              28.32,
+              -25.65
+            ],
+            [
+              28.32,
+              -25.75
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "ward_name": "Mamelodi Wards 93-97",
+        "municipality": "City of Tshwane",
+        "population": 120000,
+        "area_km2": 25,
+        "density_per_km2": 4800
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              27.82,
+              -26.55
+            ],
+            [
+              27.92,
+              -26.55
+            ],
+            [
+              27.92,
+              -26.44
+            ],
+            [
+              27.82,
+              -26.44
+            ],
+            [
+              27.82,
+              -26.55
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "ward_name": "Evaton-Orange Farm Wards 3-8",
+        "municipality": "Sedibeng / CoJ",
+        "population": 160000,
+        "area_km2": 30,
+        "density_per_km2": 5333
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              28.1,
+              -25.98
+            ],
+            [
+              28.18,
+              -25.98
+            ],
+            [
+              28.18,
+              -25.91
+            ],
+            [
+              28.1,
+              -25.91
+            ],
+            [
+              28.1,
+              -25.98
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "ward_name": "Midrand Wards 100-104",
+        "municipality": "City of Johannesburg",
+        "population": 85000,
+        "area_km2": 32,
+        "density_per_km2": 2656
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              27.95,
+              -25.82
+            ],
+            [
+              28.02,
+              -25.82
+            ],
+            [
+              28.02,
+              -25.76
+            ],
+            [
+              27.95,
+              -25.76
+            ],
+            [
+              27.95,
+              -25.82
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "ward_name": "Atteridgeville Wards 88-92",
+        "municipality": "City of Tshwane",
+        "population": 65000,
+        "area_km2": 18,
+        "density_per_km2": 3611
+      }
+    }
+  ]
+}

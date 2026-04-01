@@ -1,0 +1,320 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              27.9,
+              -26.3
+            ],
+            [
+              28.0,
+              -26.3
+            ],
+            [
+              28.0,
+              -26.15
+            ],
+            [
+              27.9,
+              -26.15
+            ],
+            [
+              27.9,
+              -26.3
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_name": "Soweto Spatial Priority Corridor",
+        "classification": "Priority",
+        "municipality": "City of Johannesburg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              28.05,
+              -26.15
+            ],
+            [
+              28.2,
+              -26.15
+            ],
+            [
+              28.2,
+              -25.98
+            ],
+            [
+              28.05,
+              -25.98
+            ],
+            [
+              28.05,
+              -26.15
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_name": "Alexandra-Tembisa Priority Zone",
+        "classification": "Priority",
+        "municipality": "City of Johannesburg / Ekurhuleni"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              27.82,
+              -26.55
+            ],
+            [
+              27.95,
+              -26.55
+            ],
+            [
+              27.95,
+              -26.42
+            ],
+            [
+              27.82,
+              -26.42
+            ],
+            [
+              27.82,
+              -26.55
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_name": "Evaton-Orange Farm Priority Zone",
+        "classification": "Priority",
+        "municipality": "Sedibeng / City of Johannesburg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              28.12,
+              -26.4
+            ],
+            [
+              28.22,
+              -26.4
+            ],
+            [
+              28.22,
+              -26.28
+            ],
+            [
+              28.12,
+              -26.28
+            ],
+            [
+              28.12,
+              -26.4
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_name": "Katlehong Priority Zone",
+        "classification": "Priority",
+        "municipality": "Ekurhuleni"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              28.3,
+              -25.75
+            ],
+            [
+              28.45,
+              -25.75
+            ],
+            [
+              28.45,
+              -25.64
+            ],
+            [
+              28.3,
+              -25.64
+            ],
+            [
+              28.3,
+              -25.75
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_name": "Mamelodi Priority Zone",
+        "classification": "Priority",
+        "municipality": "City of Tshwane"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              27.9,
+              -26.1
+            ],
+            [
+              28.05,
+              -26.1
+            ],
+            [
+              28.05,
+              -25.95
+            ],
+            [
+              27.9,
+              -25.95
+            ],
+            [
+              27.9,
+              -26.1
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_name": "Diepsloot Priority Zone",
+        "classification": "Priority",
+        "municipality": "City of Johannesburg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              27.92,
+              -25.9
+            ],
+            [
+              28.22,
+              -25.9
+            ],
+            [
+              28.22,
+              -25.78
+            ],
+            [
+              27.92,
+              -25.78
+            ],
+            [
+              27.92,
+              -25.9
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_name": "Northern Tshwane Accommodate Zone",
+        "classification": "Accommodate",
+        "municipality": "City of Tshwane"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              28.1,
+              -25.95
+            ],
+            [
+              28.28,
+              -25.95
+            ],
+            [
+              28.28,
+              -25.82
+            ],
+            [
+              28.1,
+              -25.82
+            ],
+            [
+              28.1,
+              -25.95
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_name": "Midrand-Centurion Accommodate Zone",
+        "classification": "Accommodate",
+        "municipality": "City of Johannesburg / City of Tshwane"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              28.1,
+              -26.18
+            ],
+            [
+              28.25,
+              -26.18
+            ],
+            [
+              28.25,
+              -26.08
+            ],
+            [
+              28.1,
+              -26.08
+            ],
+            [
+              28.1,
+              -26.18
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "zone_name": "Edenvale-Bedfordview Industrial Discourage Zone",
+        "classification": "Discourage",
+        "municipality": "Ekurhuleni"
+      }
+    }
+  ]
+}
