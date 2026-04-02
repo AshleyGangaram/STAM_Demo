@@ -99,18 +99,11 @@ elif selection == "Map View":
     gis_viewer.render()
 
 elif selection == "GIS Viewer":
-    st.markdown(
-        """
-        <style>
-            .block-container { padding-top: 1rem !important; padding-bottom: 0 !important; }
-            iframe[src*="terra.group"] { border: none; }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.title("🌐 GIS Viewer")
+    st.caption("STAM Geoportal — powered by VITAL TERRA")
     st.components.v1.iframe(
         "https://tvapp.terra.group/geoportal/stam/public/",
-        height=900,
+        height=800,
         scrolling=False,
     )
 
