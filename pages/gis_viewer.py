@@ -32,7 +32,7 @@ DEMO_DIR = os.path.join(_HERE, "..", "data", "demo")
 
 
 def render():
-    st.title("🗺️ GIS Viewer")
+    st.title("🗺️ Map View")
     st.caption(
         "Spatial visualisation and analysis — layer control, buffer analysis, "
         "thematic scoring maps, and service gap heatmaps."

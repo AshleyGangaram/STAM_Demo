@@ -50,7 +50,8 @@ with st.sidebar:
     pages = {
         "Dashboard":       "📊",
         "Import Data":     "📥",
-        "GIS Viewer":      "🗺️",
+        "Map View":        "🗺️",
+        "GIS Viewer":      "🌐",
         "Projects":        "📋",
         "Scoring Engine":  "⚡",
         "Query Builder":   "🔍",
@@ -93,9 +94,18 @@ elif selection == "Import Data":
     from pages import data_import
     data_import.render()
 
-elif selection == "GIS Viewer":
+elif selection == "Map View":
     from pages import gis_viewer
     gis_viewer.render()
+
+elif selection == "GIS Viewer":
+    st.title("🌐 GIS Viewer")
+    st.caption("STAM Geoportal — powered by VITAL TERRA")
+    st.components.v1.iframe(
+        "https://tvapp.terra.group/geoportal/stam/public/",
+        height=800,
+        scrolling=True,
+    )
 
 elif selection == "Projects":
     from pages import projects
