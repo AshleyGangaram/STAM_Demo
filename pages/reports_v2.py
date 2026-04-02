@@ -197,7 +197,7 @@ def render() -> None:
     dl1, dl2, _ = st.columns([1, 1, 3])
     with dl1:
         try:
-            from services.report_gen import generate_report_docx
+            from services.report_gen import generate_report_pdf
             from services.ai_analyzer import generate_analysis_report
 
             with st.spinner("Generating AI report..."):
@@ -207,16 +207,16 @@ def render() -> None:
                     projects=projects,
                     facilities=facilities,
                 )
-                docx_bytes = generate_report_docx(report_obj, projects)
+                pdf_bytes = generate_report_pdf(report_obj, projects)
             st.download_button(
-                "📥 Download Word Document",
-                data=docx_bytes,
-                file_name=f"STAM_{active['key']}_report.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "📥 Download PDF",
+                data=pdf_bytes,
+                file_name=f"STAM_{active['key']}_report.pdf",
+                mime="application/pdf",
             )
         except Exception as exc:
             st.error(f"❌ Report generation failed: {str(exc)[:100]}")
-            st.download_button("📥 Download Word Document", data=b"", file_name="report.docx", disabled=True)
+            st.download_button("📥 Download PDF", data=b"", file_name="report.pdf", disabled=True)
 
     with dl2:
         rows_export = []

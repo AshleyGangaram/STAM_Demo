@@ -1,6 +1,6 @@
 """
-DOCX report generator for STAM analysis reports.
-Uses python-docx to produce a styled, professional Word document.
+PDF and DOCX report generator for STAM analysis reports.
+Uses reportlab for PDF and python-docx for Word documents.
 """
 
 from __future__ import annotations
@@ -13,12 +13,163 @@ from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
 
 from models.schemas import AnalysisReport
 
 _BLUE = RGBColor(0x1F, 0x4E, 0x79)    # Gauteng navy
 _GREEN = RGBColor(0x1A, 0x74, 0x31)   # Priority green
 _GREY = RGBColor(0x60, 0x60, 0x60)    # Body text grey
+
+# ReportLab colors
+_RL_BLUE = colors.HexColor("#1F4E79")
+_RL_GREEN = colors.HexColor("#1A7431")
+_RL_GREY = colors.HexColor("#606060")
+
+
+def generate_report_pdf(report: AnalysisReport, projects: list) -> bytes:
+    """
+    Generate a STAM analysis report as a PDF document.
+    Returns the document as bytes for Streamlit download.
+    """
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=letter, topMargin=0.75*inch, bottomMargin=0.75*inch,
+                            leftMargin=1*inch, rightMargin=1*inch)
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=_RL_BLUE,
+        spaceAfter=6,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    subtitle_style = ParagraphStyle(
+        'Subtitle',
+        parent=styles['Normal'],
+        fontSize=11,
+        textColor=_RL_GREY,
+        spaceAfter=12,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Oblique'
+    )
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=12,
+        textColor=_RL_BLUE,
+        spaceAfter=8,
+        spaceBefore=8,
+        fontName='Helvetica-Bold'
+    )
+    body_style = ParagraphStyle(
+        'CustomBody',
+        parent=styles['Normal'],
+        fontSize=10,
+        spaceAfter=8,
+        alignment=TA_LEFT
+    )
+
+    story = []
+
+    # Cover
+    story.append(Paragraph("STAM", title_style))
+    story.append(Paragraph("Spatial Transformation Appraisal Mechanism", subtitle_style))
+    story.append(Spacer(1, 0.3*inch))
+    story.append(Paragraph(report.title, heading_style))
+    story.append(Paragraph(
+        f"Generated: {report.generated_at} | Municipality: {report.municipality} | Sector: {report.sector.title()}",
+        subtitle_style
+    ))
+    story.append(Spacer(1, 0.3*inch))
+
+    # Executive Summary
+    story.append(Paragraph("Executive Summary", heading_style))
+    story.append(Paragraph(report.executive_summary, body_style))
+    story.append(Spacer(1, 0.2*inch))
+
+    # Recommendation
+    if report.recommendation:
+        rec_style = ParagraphStyle(
+            'Recommendation',
+            parent=styles['Normal'],
+            fontSize=10,
+            textColor=_RL_GREEN,
+            leftIndent=0.2*inch,
+            spaceAfter=8,
+            fontName='Helvetica-Bold'
+        )
+        story.append(Paragraph(f"STAM Recommendation: {report.recommendation}", rec_style))
+        story.append(Spacer(1, 0.2*inch))
+
+    # Sections
+    for section in report.sections:
+        story.append(Paragraph(section.heading, heading_style))
+        story.append(Paragraph(section.content, body_style))
+        story.append(Spacer(1, 0.1*inch))
+
+    # Scorecard Table
+    if projects:
+        story.append(Spacer(1, 0.2*inch))
+        story.append(Paragraph("STAM Scorecard Summary", heading_style))
+
+        table_data = [
+            ["Project ID", "Project Name", "Type", "Score", "Classification", "Budget (ZAR)"]
+        ]
+        for p in projects:
+            budget = getattr(p, "budget_rands", 0) or 0
+            table_data.append([
+                str(getattr(p, "project_id", "")),
+                str(getattr(p, "name", ""))[:20],
+                str(getattr(p, "project_type", "")),
+                str(getattr(p, "total_score", 0)),
+                str(getattr(p, "classification", "")),
+                f"R{budget:,.0f}"
+            ])
+
+        table = Table(table_data, colWidths=[0.8*inch, 1.5*inch, 0.7*inch, 0.6*inch, 1*inch, 1.2*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), _RL_BLUE),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ]))
+        story.append(table)
+
+    # Risk notes
+    if report.risk_notes:
+        story.append(Spacer(1, 0.2*inch))
+        story.append(Paragraph("Risk and Readiness Notes", heading_style))
+        story.append(Paragraph(report.risk_notes, body_style))
+
+    # Footer
+    story.append(Spacer(1, 0.3*inch))
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=7,
+        textColor=_RL_GREY,
+        alignment=TA_CENTER
+    )
+    story.append(Paragraph(
+        "Produced by STAM — Spatial Transformation Appraisal Mechanism | TERRA VITAL / Vastpoint | Gauteng Province",
+        footer_style
+    ))
+
+    doc.build(story)
+    return buf.getvalue()
 
 
 def _set_heading_style(para, level: int = 1, colour: RGBColor = _BLUE):

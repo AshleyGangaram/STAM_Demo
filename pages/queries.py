@@ -252,12 +252,63 @@ def _run_and_display(query_name: str, criteria: dict, projects: list,
         st.dataframe(df, use_container_width=True, hide_index=True)
 
         # Export
-        buf = io.BytesIO()
-        with pd.ExcelWriter(buf, engine="openpyxl") as writer:
-            df.to_excel(writer, index=False, sheet_name="STAM Query Results")
-        st.download_button(
-            "⬇ Export to Excel",
-            data=buf.getvalue(),
-            file_name=f"STAM_Query_{query_name.replace(' ', '_')[:30]}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
+        ex_col1, ex_col2 = st.columns(2)
+
+        with ex_col1:
+            buf = io.BytesIO()
+            with pd.ExcelWriter(buf, engine="openpyxl") as writer:
+                df.to_excel(writer, index=False, sheet_name="STAM Query Results")
+            st.download_button(
+                "⬇ Export to Excel",
+                data=buf.getvalue(),
+                file_name=f"STAM_Query_{query_name.replace(' ', '_')[:30]}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+
+        with ex_col2:
+            # PDF export
+            try:
+                from reportlab.lib.pagesizes import letter, landscape
+                from reportlab.lib.styles import getSampleStyleSheet
+                from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+                from reportlab.lib import colors
+                from reportlab.lib.units import inch
+                from reportlab.lib.enums import TA_CENTER
+
+                pdf_buf = io.BytesIO()
+                pdf_doc = SimpleDocTemplate(pdf_buf, pagesize=landscape(letter), topMargin=0.5*inch, bottomMargin=0.5*inch)
+
+                styles = getSampleStyleSheet()
+                story = []
+
+                # Title
+                title_style = styles['Heading2']
+                title_style.textColor = colors.HexColor("#1F4E79")
+                story.append(Paragraph(f"STAM Query Results: {query_name}", title_style))
+                story.append(Spacer(1, 0.2*inch))
+
+                # Table
+                table_data = [list(df.columns)] + df.values.tolist()
+                table = Table(table_data, colWidths=[0.8*inch]*len(df.columns))
+                table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1F4E79")),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), 9),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+                    ('FONTSIZE', (0, 1), (-1, -1), 8),
+                ]))
+                story.append(table)
+
+                pdf_doc.build(story)
+                st.download_button(
+                    "⬇ Export to PDF",
+                    data=pdf_buf.getvalue(),
+                    file_name=f"STAM_Query_{query_name.replace(' ', '_')[:30]}.pdf",
+                    mime="application/pdf",
+                )
+            except Exception as exc:
+                st.error(f"PDF export unavailable: {str(exc)[:50]}")
