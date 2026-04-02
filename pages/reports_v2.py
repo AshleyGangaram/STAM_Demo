@@ -183,30 +183,35 @@ def render() -> None:
         user_role=st.session_state.get("user_role", "Analyst"),
     )
 
-    # ── Export buttons ────────────────────────────────────────────────────────
-    dl1, dl2, _ = st.columns([1, 1, 3])
-    with dl1:
-        # PDF placeholder — generate DOCX for now
-        try:
-            from services.report_gen import generate_report_docx
-            from services.ai_analyzer import generate_analysis_report
+    # ── Generate report once (before buttons) ────────────────────────────────
+    docx_bytes = None
+    try:
+        from services.report_gen import generate_report_docx
+        from services.ai_analyzer import generate_analysis_report
 
-            with st.spinner("Generating AI report..."):
-                report_obj = generate_analysis_report(
-                    municipality=projects[0].municipality or "Gauteng",
-                    sector=active["key"],
-                    projects=projects,
-                    facilities=facilities,
-                )
-                docx_bytes = generate_report_docx(report_obj, projects)
+        report_obj = generate_analysis_report(
+            municipality=projects[0].municipality or "Gauteng",
+            sector=active["key"],
+            projects=projects,
+            facilities=facilities,
+        )
+        docx_bytes = generate_report_docx(report_obj, projects)
+    except Exception:
+        pass
+
+    # ── Export buttons ────────────────────────────────────────────────────────
+    dl1, dl2 = st.columns(2)
+
+    with dl1:
+        if docx_bytes:
             st.download_button(
-                "📥 Download PDF",
+                "📥 Download DOCX",
                 data=docx_bytes,
                 file_name=f"STAM_{active['key']}_report.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
-        except Exception:
-            st.download_button("📥 Download PDF", data=b"", file_name="report.pdf", disabled=True)
+        else:
+            st.download_button("📥 Download DOCX", data=b"", file_name="report.docx", disabled=True)
 
     with dl2:
         rows_export = []
