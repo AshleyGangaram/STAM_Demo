@@ -130,6 +130,7 @@ def render() -> None:
             st.markdown(_card_html(rt, is_selected), unsafe_allow_html=True)
             if st.button("Select", key=f"sel_{rt['key']}", use_container_width=True):
                 st.session_state.report_type = rt["key"]
+                st.rerun()
 
     st.divider()
 
@@ -139,21 +140,15 @@ def render() -> None:
     municipalities = sorted({p.municipality for p in all_projects if p.municipality})
     filter_col, btn_col1, btn_col2 = st.columns([2, 1, 1])
 
-    # Initialize variables
-    selected_label = None
-    selected_muni = None
-    project_labels = {}
-
     with filter_col:
         if active["key"] == "single":
             project_labels = {f"[{p.project_id}] {p.name}": p for p in all_projects}
-            selected_label = st.selectbox("Select project", list(project_labels.keys()), key="project_select")
+            selected_label = st.selectbox("Select project", list(project_labels.keys()))
             selected_muni = None
         else:
             selected_muni = st.selectbox(
                 "Municipality (optional)",
                 ["All municipalities"] + municipalities,
-                key="muni_select",
             )
             selected_label = None
 
@@ -162,30 +157,20 @@ def render() -> None:
         if st.button("🟢 Generate Report", type="primary", use_container_width=True):
             st.session_state.report_generated = True
             st.session_state.selected_muni = selected_muni
-            st.session_state.selected_label = selected_label
             st.session_state.active_key = active["key"]
 
     with btn_col2:
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
         if st.button("🔄 Clear", use_container_width=True):
             st.session_state.report_generated = False
-            st.session_state.selected_muni = None
-            st.session_state.selected_label = None
+            st.rerun()
 
     if not st.session_state.get("report_generated", False):
         session.close()
         return
 
-    # ── Restore selection from session state ──────────────────────────────────
-    selected_muni = st.session_state.get("selected_muni")
-    selected_label = st.session_state.get("selected_label")
-    active_key = st.session_state.get("active_key", active["key"])
-    active = next(r for r in _REPORT_TYPES if r["key"] == active_key)
-
     # ── Filter data ──────────────────────────────────────────────────────────
     if active["key"] == "single" and selected_label:
-        # Rebuild project labels dict for lookup
-        project_labels = {f"[{p.project_id}] {p.name}": p for p in all_projects}
         proj = project_labels[selected_label]
         projects = [proj]
         facilities = [
@@ -218,10 +203,31 @@ def render() -> None:
     )
 
     # ── Export buttons ────────────────────────────────────────────────────────
-    st.markdown("#### Export Data")
-    dl1, _ = st.columns([1, 3])
-
+    dl1, dl2, _ = st.columns([1, 1, 3])
     with dl1:
+        try:
+            from services.report_gen import generate_report_pdf
+            from services.ai_analyzer import generate_analysis_report
+
+            with st.spinner("Generating AI report..."):
+                report_obj = generate_analysis_report(
+                    municipality=projects[0].municipality or "Gauteng",
+                    sector=active["key"],
+                    projects=projects,
+                    facilities=facilities,
+                )
+                pdf_bytes = generate_report_pdf(report_obj, projects)
+            st.download_button(
+                "📥 Download PDF",
+                data=pdf_bytes,
+                file_name=f"STAM_{active['key']}_report.pdf",
+                mime="application/pdf",
+            )
+        except Exception as exc:
+            st.error(f"❌ Report generation failed: {str(exc)[:100]}")
+            st.download_button("📥 Download PDF", data=b"", file_name="report.pdf", disabled=True)
+
+    with dl2:
         rows_export = []
         for p in projects:
             rows_export.append({
