@@ -158,9 +158,19 @@ def render():
                     # Export buttons
                     st.divider()
                     st.subheader("Export Report")
-                    dl_col1, dl_col2 = st.columns(2)
+                    dl_col1, dl_col2, dl_col3 = st.columns(3)
 
                     with dl_col1:
+                        from services.report_gen import generate_report_pdf
+                        pdf_bytes = generate_report_pdf(report, relevant_projects)
+                        st.download_button(
+                            "⬇ Download PDF Report",
+                            data=pdf_bytes,
+                            file_name=f"STAM_Report_{scenario_name[:40].replace(' ', '_')}.pdf",
+                            mime="application/pdf",
+                        )
+
+                    with dl_col2:
                         from services.report_gen import generate_report_docx
                         docx_bytes = generate_report_docx(report, relevant_projects)
                         st.download_button(
@@ -170,7 +180,7 @@ def render():
                             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                         )
 
-                    with dl_col2:
+                    with dl_col3:
                         buf = io.BytesIO()
                         with pd.ExcelWriter(buf, engine="openpyxl") as writer:
                             pd.DataFrame(rows).to_excel(
