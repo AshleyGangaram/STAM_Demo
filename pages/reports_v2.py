@@ -92,6 +92,7 @@ def _build_map(projects: list[Project], facilities: list[Facility]) -> folium.Ma
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         attr="Esri",
         name="Satellite",
+        overlay=False,
         control=True,
     ).add_to(m)
     folium.LayerControl(collapsed=False).add_to(m)

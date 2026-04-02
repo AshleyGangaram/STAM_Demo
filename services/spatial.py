@@ -80,6 +80,7 @@ def make_base_map(center: list | None = None, zoom: int = GAUTENG_ZOOM) -> foliu
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         attr="Esri",
         name="Satellite",
+        overlay=False,
         control=True,
     ).add_to(m)
 
