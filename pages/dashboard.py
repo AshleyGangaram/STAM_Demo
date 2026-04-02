@@ -88,7 +88,7 @@ def render():
         import folium
         folium.LayerControl(collapsed=False).add_to(m)
 
-        st_folium(m, width=700, height=480, returned_objects=[])
+        st_folium(m, use_container_width=True, height=550, returned_objects=[])
 
     with alert_col:
         st.subheader("⚠ Budget & Alignment Alerts")
