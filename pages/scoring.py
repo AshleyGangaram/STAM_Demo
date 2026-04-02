@@ -82,17 +82,29 @@ def render():
 
     run_btn = st.button("⚡ Run STAM Appraisal", type="primary", use_container_width=True)
 
-    if run_btn or st.session_state.get("scores_computed"):
-        st.session_state.scores_computed = True
-
+    # Store results in session state to persist across reruns
+    if run_btn:
         result_a = score_project(proj_a, facilities, custom_weights)
         result_b = score_project(proj_b, facilities, custom_weights)
+
+        # Store in session state for persistence
+        st.session_state.last_result_a = result_a
+        st.session_state.last_result_b = result_b
+        st.session_state.last_proj_a = proj_a
+        st.session_state.last_proj_b = proj_b
 
         log_action("RUN_STAM_APPRAISAL", "project",
                    f"{proj_a.project_id},{proj_b.project_id}",
                    {"scores": {proj_a.project_id: result_a.total_score,
                                proj_b.project_id: result_b.total_score}},
                    user_role=st.session_state.get("user_role", "Analyst"))
+
+    # Display results if they exist in session state
+    if st.session_state.get("last_result_a") and st.session_state.get("last_result_b"):
+        result_a = st.session_state.last_result_a
+        result_b = st.session_state.last_result_b
+        proj_a = st.session_state.last_proj_a
+        proj_b = st.session_state.last_proj_b
 
         st.divider()
         st.subheader("Appraisal Results")
