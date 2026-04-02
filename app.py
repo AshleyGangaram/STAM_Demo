@@ -55,6 +55,7 @@ with st.sidebar:
         "Scoring Engine":  "⚡",
         "Query Builder":   "🔍",
         "Reports":         "📄",
+        "Audit Trail":     "📝",
     }
 
     if "page" not in st.session_state:
@@ -121,3 +122,7 @@ elif selection == "Query Builder":
 elif selection == "Reports":
     from pages import reports
     reports.render()
+
+elif selection == "Audit Trail":
+    from pages import audit_trail
+    audit_trail.render()
