@@ -8,6 +8,7 @@ from __future__ import annotations
 import io
 import json
 import os
+from datetime import datetime
 
 import folium
 import pandas as pd
@@ -269,11 +270,10 @@ def _run_and_display(query_name: str, criteria: dict, projects: list,
             # PDF export
             try:
                 from reportlab.lib.pagesizes import letter, landscape
-                from reportlab.lib.styles import getSampleStyleSheet
+                from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
                 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
                 from reportlab.lib import colors
                 from reportlab.lib.units import inch
-                from reportlab.lib.enums import TA_CENTER
 
                 pdf_buf = io.BytesIO()
                 pdf_doc = SimpleDocTemplate(pdf_buf, pagesize=landscape(letter), topMargin=0.5*inch, bottomMargin=0.5*inch)
@@ -285,25 +285,53 @@ def _run_and_display(query_name: str, criteria: dict, projects: list,
                 title_style = styles['Heading2']
                 title_style.textColor = colors.HexColor("#1F4E79")
                 story.append(Paragraph(f"STAM Query Results: {query_name}", title_style))
-                story.append(Spacer(1, 0.2*inch))
+                story.append(Spacer(1, 0.15*inch))
+
+                # Add info box
+                muni = criteria.get('municipality', 'All') if isinstance(criteria, dict) else 'All'
+                info_text = f"Query returned {len(results)} results | Municipality: {muni} | Generated: {datetime.now().strftime('%d %b %Y')}"
+                info_style = ParagraphStyle(
+                    'Info',
+                    parent=styles['Normal'],
+                    fontSize=8,
+                    textColor=colors.HexColor("#606060"),
+                    spaceAfter=6
+                )
+                story.append(Paragraph(info_text, info_style))
+                story.append(Spacer(1, 0.1*inch))
 
                 # Table
                 table_data = [list(df.columns)] + df.values.tolist()
-                table = Table(table_data, colWidths=[0.8*inch]*len(df.columns))
+                table = Table(table_data, colWidths=[0.75*inch]*len(df.columns))
                 table.setStyle(TableStyle([
                     ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1F4E79")),
                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('FONTSIZE', (0, 0), (-1, 0), 9),
+                    ('FONTSIZE', (0, 0), (-1, 0), 8),
                     ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
                     ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
                     ('GRID', (0, 0), (-1, -1), 1, colors.grey),
-                    ('FONTSIZE', (0, 1), (-1, -1), 8),
+                    ('FONTSIZE', (0, 1), (-1, -1), 7),
                 ]))
                 story.append(table)
 
+                # Add note about map
+                story.append(Spacer(1, 0.2*inch))
+                map_note = "Note: Interactive map with query results is available in the STAM web application. This PDF shows the results table and metadata."
+                note_style = ParagraphStyle(
+                    'MapNote',
+                    parent=styles['Normal'],
+                    fontSize=8,
+                    textColor=colors.HexColor("#1F4E79"),
+                    leftIndent=0.2*inch,
+                    spaceAfter=6,
+                    fontName='Helvetica-Oblique'
+                )
+                story.append(Paragraph(map_note, note_style))
+
                 pdf_doc.build(story)
+
                 st.download_button(
                     "⬇ Export to PDF",
                     data=pdf_buf.getvalue(),
@@ -311,4 +339,4 @@ def _run_and_display(query_name: str, criteria: dict, projects: list,
                     mime="application/pdf",
                 )
             except Exception as exc:
-                st.error(f"PDF export unavailable: {str(exc)[:50]}")
+                st.error(f"PDF export unavailable: {str(exc)[:80]}")
