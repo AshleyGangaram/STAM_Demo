@@ -41,8 +41,7 @@ st.set_page_config(
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 
 with st.sidebar:
-    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Gauteng_province_in_South_Africa.svg/200px-Gauteng_province_in_South_Africa.svg.png",
-             width=60)
+    st.image("assets/logo.png", width=120)
     st.title("STAM")
     st.caption("Spatial Transformation Appraisal Mechanism")
     st.divider()
