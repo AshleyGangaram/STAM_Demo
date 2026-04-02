@@ -85,17 +85,7 @@ def _card_html(rt: dict[str, Any], selected: bool) -> str:
 
 def _build_map(projects: list[Project], facilities: list[Facility]) -> folium.Map:
     """Small Folium map showing candidate project locations."""
-    m = folium.Map(location=[-26.1, 28.0], zoom_start=9, tiles=None)
-    folium.TileLayer("CartoDB positron", name="CartoDB Light", control=True).add_to(m)
-    folium.TileLayer("OpenStreetMap", name="OpenStreetMap", control=True).add_to(m)
-    folium.TileLayer(
-        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        attr="Esri",
-        name="Satellite",
-        overlay=False,
-        control=True,
-    ).add_to(m)
-    folium.LayerControl(collapsed=False).add_to(m)
+    m = folium.Map(location=[-26.1, 28.0], zoom_start=9, tiles="CartoDB positron")
     for p in projects:
         if p.latitude and p.longitude:
             colour = SCORE_COLOURS.get(p.classification, "#9b9b9b")
@@ -196,8 +186,9 @@ def render() -> None:
     # ── Export buttons ────────────────────────────────────────────────────────
     dl1, dl2, _ = st.columns([1, 1, 3])
     with dl1:
+        # PDF placeholder — generate DOCX for now
         try:
-            from services.report_gen import generate_report_pdf
+            from services.report_gen import generate_report_docx
             from services.ai_analyzer import generate_analysis_report
 
             with st.spinner("Generating AI report..."):
@@ -207,15 +198,14 @@ def render() -> None:
                     projects=projects,
                     facilities=facilities,
                 )
-                pdf_bytes = generate_report_pdf(report_obj, projects)
+                docx_bytes = generate_report_docx(report_obj, projects)
             st.download_button(
                 "📥 Download PDF",
-                data=pdf_bytes,
-                file_name=f"STAM_{active['key']}_report.pdf",
-                mime="application/pdf",
+                data=docx_bytes,
+                file_name=f"STAM_{active['key']}_report.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
-        except Exception as exc:
-            st.error(f"❌ Report generation failed: {str(exc)[:100]}")
+        except Exception:
             st.download_button("📥 Download PDF", data=b"", file_name="report.pdf", disabled=True)
 
     with dl2:
@@ -249,7 +239,7 @@ def render() -> None:
     # Map
     st.markdown("#### Candidate Project Locations")
     m = _build_map(projects, facilities)
-    st_folium(m, use_container_width=True, height=500, returned_objects=[])
+    st_folium(m, use_container_width=True, height=380, returned_objects=[])
 
     # Area profile
     st.markdown("#### Area Profile")
