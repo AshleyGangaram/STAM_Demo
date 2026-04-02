@@ -130,7 +130,6 @@ def render() -> None:
             st.markdown(_card_html(rt, is_selected), unsafe_allow_html=True)
             if st.button("Select", key=f"sel_{rt['key']}", use_container_width=True):
                 st.session_state.report_type = rt["key"]
-                st.rerun()
 
     st.divider()
 
@@ -165,7 +164,6 @@ def render() -> None:
             st.session_state.selected_muni = selected_muni
             st.session_state.selected_label = selected_label
             st.session_state.active_key = active["key"]
-            st.rerun()
 
     with btn_col2:
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
@@ -173,7 +171,6 @@ def render() -> None:
             st.session_state.report_generated = False
             st.session_state.selected_muni = None
             st.session_state.selected_label = None
-            st.rerun()
 
     if not st.session_state.get("report_generated", False):
         session.close()

@@ -204,43 +204,42 @@ def render():
 
             # Display WMS preview if validated
             if st.session_state.get("wms_validated") and st.session_state.get("wms_url") == wms_url:
-                with st.spinner("Connecting to WMS service..."):
-                    try:
-                        import folium
-                        from streamlit_folium import st_folium
-                        from services.spatial import make_base_map
+                try:
+                    import folium
+                    from streamlit_folium import st_folium
+                    from services.spatial import make_base_map
 
-                        st.success(
-                            f"✓ WMS endpoint configured: `{st.session_state.wms_url}`\n\n"
-                            "STAM is compatible with ESRI, GeoServer, and any "
-                            "OGC-compliant WMS/WFS service."
-                        )
+                    st.success(
+                        f"✓ WMS endpoint configured: `{st.session_state.wms_url}`\n\n"
+                        "STAM is compatible with ESRI, GeoServer, and any "
+                        "OGC-compliant WMS/WFS service."
+                    )
 
-                        m = make_base_map(center=[-26.1, 28.1], zoom=10)
+                    m = make_base_map(center=[-26.1, 28.1], zoom=10)
 
-                        folium.raster_layers.WmsTileLayer(
-                            url=st.session_state.wms_base,
-                            layers=st.session_state.wms_layer or "Projects",
-                            fmt="image/png",
-                            transparent=True,
-                            name=f"WMS: {st.session_state.wms_layer or 'Layer'}",
-                            overlay=True,
-                            control=True,
-                        ).add_to(m)
+                    folium.raster_layers.WmsTileLayer(
+                        url=st.session_state.wms_base,
+                        layers=st.session_state.wms_layer or "Projects",
+                        fmt="image/png",
+                        transparent=True,
+                        name=f"WMS: {st.session_state.wms_layer or 'Layer'}",
+                        overlay=True,
+                        control=True,
+                    ).add_to(m)
 
-                        folium.LayerControl(collapsed=False).add_to(m)
+                    folium.LayerControl(collapsed=False).add_to(m)
 
-                        st.subheader("WMS Layer Preview")
-                        st_folium(m, use_container_width=True, height=500, returned_objects=[])
+                    st.subheader("WMS Layer Preview")
+                    st_folium(m, use_container_width=True, height=500, returned_objects=[])
 
-                        log_action(
-                            "CONFIGURE_WMS", "layer", "",
-                            {"url": st.session_state.wms_url, "layer": st.session_state.wms_layer},
-                            user_role=st.session_state.get("user_role", "Analyst"),
-                        )
+                    log_action(
+                        "CONFIGURE_WMS", "layer", "",
+                        {"url": st.session_state.wms_url, "layer": st.session_state.wms_layer},
+                        user_role=st.session_state.get("user_role", "Analyst"),
+                    )
 
-                    except Exception as exc:
-                        st.error(f"Could not connect to WMS service: {exc}")
+                except Exception as exc:
+                    st.error(f"Could not connect to WMS service: {exc}")
             elif wms_url:
                 st.caption("Click **Validate & Preview** to see the layer on the map.")
 
