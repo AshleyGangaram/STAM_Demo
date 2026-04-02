@@ -8,10 +8,12 @@ GT/GDeG/031/2025 | TERRA VITAL / Vastpoint POC
 
 import os
 import sys
+from pathlib import Path
 
 import streamlit as st
 
-sys.path.insert(0, os.path.dirname(__file__))
+_APP_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_APP_DIR))
 
 from dotenv import load_dotenv
 
@@ -41,9 +43,7 @@ st.set_page_config(
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 
 with st.sidebar:
-    st.image("assets/logo.png", width=120)
-    st.title("STAM")
-    st.caption("Spatial Transformation Appraisal Mechanism")
+    st.image(str(_APP_DIR / "assets" / "logo.png"), width=180)
     st.divider()
 
     pages = {
