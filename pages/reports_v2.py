@@ -140,15 +140,21 @@ def render() -> None:
     municipalities = sorted({p.municipality for p in all_projects if p.municipality})
     filter_col, btn_col1, btn_col2 = st.columns([2, 1, 1])
 
+    # Initialize variables
+    selected_label = None
+    selected_muni = None
+    project_labels = {}
+
     with filter_col:
         if active["key"] == "single":
             project_labels = {f"[{p.project_id}] {p.name}": p for p in all_projects}
-            selected_label = st.selectbox("Select project", list(project_labels.keys()))
+            selected_label = st.selectbox("Select project", list(project_labels.keys()), key="project_select")
             selected_muni = None
         else:
             selected_muni = st.selectbox(
                 "Municipality (optional)",
                 ["All municipalities"] + municipalities,
+                key="muni_select",
             )
             selected_label = None
 
@@ -157,20 +163,32 @@ def render() -> None:
         if st.button("🟢 Generate Report", type="primary", use_container_width=True):
             st.session_state.report_generated = True
             st.session_state.selected_muni = selected_muni
+            st.session_state.selected_label = selected_label
             st.session_state.active_key = active["key"]
+            st.rerun()
 
     with btn_col2:
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
         if st.button("🔄 Clear", use_container_width=True):
             st.session_state.report_generated = False
+            st.session_state.selected_muni = None
+            st.session_state.selected_label = None
             st.rerun()
 
     if not st.session_state.get("report_generated", False):
         session.close()
         return
 
+    # ── Restore selection from session state ──────────────────────────────────
+    selected_muni = st.session_state.get("selected_muni")
+    selected_label = st.session_state.get("selected_label")
+    active_key = st.session_state.get("active_key", active["key"])
+    active = next(r for r in _REPORT_TYPES if r["key"] == active_key)
+
     # ── Filter data ──────────────────────────────────────────────────────────
     if active["key"] == "single" and selected_label:
+        # Rebuild project labels dict for lookup
+        project_labels = {f"[{p.project_id}] {p.name}": p for p in all_projects}
         proj = project_labels[selected_label]
         projects = [proj]
         facilities = [

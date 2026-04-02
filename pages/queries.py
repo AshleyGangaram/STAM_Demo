@@ -282,14 +282,19 @@ def _run_and_display(query_name: str, criteria: dict, projects: list,
                 story = []
 
                 # Title
-                title_style = styles['Heading2']
-                title_style.textColor = colors.HexColor("#1F4E79")
+                title_style = ParagraphStyle(
+                    'PDFTitle',
+                    parent=styles['Heading2'],
+                    fontSize=14,
+                    textColor=colors.HexColor("#1F4E79"),
+                    spaceAfter=8
+                )
                 story.append(Paragraph(f"STAM Query Results: {query_name}", title_style))
                 story.append(Spacer(1, 0.15*inch))
 
                 # Add info box
                 muni = criteria.get('municipality', 'All') if isinstance(criteria, dict) else 'All'
-                info_text = f"Query returned {len(results)} results | Municipality: {muni} | Generated: {datetime.now().strftime('%d %b %Y')}"
+                info_text = f"Query returned {len(results)} results | Municipality: {muni} | Generated: {datetime.now().strftime('%d %b %Y %H:%M')}"
                 info_style = ParagraphStyle(
                     'Info',
                     parent=styles['Normal'],
@@ -301,20 +306,23 @@ def _run_and_display(query_name: str, criteria: dict, projects: list,
                 story.append(Spacer(1, 0.1*inch))
 
                 # Table
-                table_data = [list(df.columns)] + df.values.tolist()
-                table = Table(table_data, colWidths=[0.75*inch]*len(df.columns))
-                table.setStyle(TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1F4E79")),
-                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('FONTSIZE', (0, 0), (-1, 0), 8),
-                    ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
-                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                    ('GRID', (0, 0), (-1, -1), 1, colors.grey),
-                    ('FONTSIZE', (0, 1), (-1, -1), 7),
-                ]))
-                story.append(table)
+                if not df.empty:
+                    table_data = [list(df.columns)] + df.values.tolist()
+                    col_width = (10.0 * inch) / len(df.columns)  # Distribute columns evenly
+                    table = Table(table_data, colWidths=[col_width]*len(df.columns))
+                    table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1F4E79")),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('FONTSIZE', (0, 0), (-1, 0), 8),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+                        ('FONTSIZE', (0, 1), (-1, -1), 7),
+                        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                    ]))
+                    story.append(table)
 
                 # Add note about map
                 story.append(Spacer(1, 0.2*inch))
@@ -337,6 +345,10 @@ def _run_and_display(query_name: str, criteria: dict, projects: list,
                     data=pdf_buf.getvalue(),
                     file_name=f"STAM_Query_{query_name.replace(' ', '_')[:30]}.pdf",
                     mime="application/pdf",
+                    key=f"pdf_export_{query_name}",
                 )
             except Exception as exc:
-                st.error(f"PDF export unavailable: {str(exc)[:80]}")
+                import traceback
+                st.error(f"PDF export failed: {str(exc)[:100]}")
+                with st.expander("Debug details"):
+                    st.code(traceback.format_exc())

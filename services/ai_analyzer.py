@@ -197,9 +197,12 @@ Output JSON with this exact schema:
         raw = response.content[0].text.strip()
         # Strip markdown code fences if present
         if raw.startswith("```"):
-            raw = raw.split("```")[1]
+            parts = raw.split("```")
+            raw = parts[1] if len(parts) > 1 else raw
+            # Remove "json" prefix if present
             if raw.startswith("json"):
-                raw = raw[4:]
+                raw = raw[4:].lstrip()
+
         data = json.loads(raw)
 
         sections = [ReportSection(**s) for s in data.get("sections", [])]
