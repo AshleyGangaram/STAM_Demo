@@ -210,13 +210,10 @@ def render() -> None:
             from services.ai_analyzer import generate_analysis_report
             import time
 
-            # Progress feedback
-            progress_placeholder = st.empty()
             status_placeholder = st.empty()
 
             try:
-                with status_placeholder.container():
-                    st.info("⏳ Analyzing spatial data and generating insights...")
+                status_placeholder.info("⏳ Analyzing spatial data and generating insights...")
 
                 start_time = time.time()
                 report_obj = generate_analysis_report(
@@ -227,8 +224,7 @@ def render() -> None:
                 )
                 elapsed = time.time() - start_time
 
-                with status_placeholder.container():
-                    st.success(f"✅ Analysis complete ({elapsed:.1f}s) — Rendering PDF...")
+                status_placeholder.success(f"✅ Analysis complete ({elapsed:.1f}s) — Rendering PDF...")
 
                 pdf_bytes = generate_report_pdf(report_obj, projects)
 
@@ -244,7 +240,6 @@ def render() -> None:
                 error_msg = str(exc)[:150]
                 st.error(f"❌ Report generation failed:\n{error_msg}")
                 st.download_button("📥 Download PDF", data=b"", file_name="report.pdf", disabled=True)
-                # Show debug info
                 with st.expander("Debug info"):
                     st.code(str(exc))
 
