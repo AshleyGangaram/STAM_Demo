@@ -196,7 +196,6 @@ def render() -> None:
     # ── Export buttons ────────────────────────────────────────────────────────
     dl1, dl2, _ = st.columns([1, 1, 3])
     with dl1:
-        # PDF placeholder — generate DOCX for now
         try:
             from services.report_gen import generate_report_docx
             from services.ai_analyzer import generate_analysis_report
@@ -210,13 +209,14 @@ def render() -> None:
                 )
                 docx_bytes = generate_report_docx(report_obj, projects)
             st.download_button(
-                "📥 Download PDF",
+                "📥 Download Word Document",
                 data=docx_bytes,
                 file_name=f"STAM_{active['key']}_report.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
-        except Exception:
-            st.download_button("📥 Download PDF", data=b"", file_name="report.pdf", disabled=True)
+        except Exception as exc:
+            st.error(f"❌ Report generation failed: {str(exc)[:100]}")
+            st.download_button("📥 Download Word Document", data=b"", file_name="report.docx", disabled=True)
 
     with dl2:
         rows_export = []
