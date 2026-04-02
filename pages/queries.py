@@ -229,7 +229,7 @@ def _run_and_display(query_name: str, criteria: dict, projects: list,
         m = add_facilities_layer(m, facilities)
         m = add_projects_layer(m, results, highlight_ids=[p.project_id for p in results])
         folium.LayerControl().add_to(m)
-        st_folium(m, width=600, height=400, returned_objects=[])
+        st_folium(m, use_container_width=True, height=500, returned_objects=[])
 
     with table_col:
         rows = []

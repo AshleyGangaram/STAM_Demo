@@ -136,7 +136,7 @@ def render():
                     icon=folium.Icon(color="darkblue", icon="star", prefix="fa"),
                 ).add_to(m)
                 m = add_facilities_layer(m, facilities)
-                st_folium(m, width=500, height=350, returned_objects=[])
+                st_folium(m, use_container_width=True, height=500, returned_objects=[])
             else:
                 st.warning("No coordinates for this project.")
 

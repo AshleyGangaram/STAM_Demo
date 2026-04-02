@@ -160,7 +160,7 @@ def render():
                         fill=True,
                         popup=props.get("name", "Facility"),
                     ).add_to(m)
-            st_folium(m, width=600, height=350, returned_objects=[])
+            st_folium(m, use_container_width=True, height=500, returned_objects=[])
 
             if st.button("✅ Import Facilities", type="primary"):
                 tmp = tempfile.NamedTemporaryFile(suffix=".geojson", delete=False, mode="w")

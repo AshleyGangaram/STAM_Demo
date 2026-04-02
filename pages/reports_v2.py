@@ -249,7 +249,7 @@ def render() -> None:
     # Map
     st.markdown("#### Candidate Project Locations")
     m = _build_map(projects, facilities)
-    st_folium(m, use_container_width=True, height=380, returned_objects=[])
+    st_folium(m, use_container_width=True, height=500, returned_objects=[])
 
     # Area profile
     st.markdown("#### Area Profile")
