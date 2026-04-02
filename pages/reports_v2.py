@@ -85,7 +85,16 @@ def _card_html(rt: dict[str, Any], selected: bool) -> str:
 
 def _build_map(projects: list[Project], facilities: list[Facility]) -> folium.Map:
     """Small Folium map showing candidate project locations."""
-    m = folium.Map(location=[-26.1, 28.0], zoom_start=9, tiles="CartoDB positron")
+    m = folium.Map(location=[-26.1, 28.0], zoom_start=9, tiles=None)
+    folium.TileLayer("CartoDB positron", name="CartoDB Light", control=True).add_to(m)
+    folium.TileLayer("OpenStreetMap", name="OpenStreetMap", control=True).add_to(m)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Esri",
+        name="Satellite",
+        control=True,
+    ).add_to(m)
+    folium.LayerControl(collapsed=False).add_to(m)
     for p in projects:
         if p.latitude and p.longitude:
             colour = SCORE_COLOURS.get(p.classification, "#9b9b9b")

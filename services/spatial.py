@@ -76,6 +76,12 @@ def make_base_map(center: list | None = None, zoom: int = GAUTENG_ZOOM) -> foliu
     # Base layers
     folium.TileLayer("CartoDB positron", name="CartoDB Light", control=True).add_to(m)
     folium.TileLayer("OpenStreetMap", name="OpenStreetMap", control=True).add_to(m)
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Esri",
+        name="Satellite",
+        control=True,
+    ).add_to(m)
 
     # Controls
     m.add_child(MeasureControl(position="topright"))
