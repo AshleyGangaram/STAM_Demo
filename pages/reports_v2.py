@@ -138,7 +138,7 @@ def render() -> None:
 
     # ── Filters ──────────────────────────────────────────────────────────────
     municipalities = sorted({p.municipality for p in all_projects if p.municipality})
-    filter_col, btn_col = st.columns([2, 1])
+    filter_col, btn_col1, btn_col2 = st.columns([2, 1, 1])
 
     with filter_col:
         if active["key"] == "single":
@@ -152,11 +152,20 @@ def render() -> None:
             )
             selected_label = None
 
-    with btn_col:
+    with btn_col1:
         st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
-        generate = st.button("🟢 Generate Report", type="primary", use_container_width=True)
+        if st.button("🟢 Generate Report", type="primary", use_container_width=True):
+            st.session_state.report_generated = True
+            st.session_state.selected_muni = selected_muni
+            st.session_state.active_key = active["key"]
 
-    if not generate:
+    with btn_col2:
+        st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+        if st.button("🔄 Clear", use_container_width=True):
+            st.session_state.report_generated = False
+            st.rerun()
+
+    if not st.session_state.get("report_generated", False):
         session.close()
         return
 
