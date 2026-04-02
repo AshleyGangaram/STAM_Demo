@@ -55,6 +55,7 @@ with st.sidebar:
         "Scoring Engine":  "⚡",
         "Query Builder":   "🔍",
         "Reports":         "📄",
+        "Decision Support":"📊",
         "Audit Trail":     "📝",
     }
 
@@ -120,6 +121,10 @@ elif selection == "Query Builder":
     queries.render()
 
 elif selection == "Reports":
+    from pages import reports_v2
+    reports_v2.render()
+
+elif selection == "Decision Support":
     from pages import reports
     reports.render()
 
