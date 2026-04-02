@@ -3,7 +3,7 @@ STAM — Spatial Transformation Appraisal Mechanism
 Streamlit entry point.
 
 Gauteng Province Capital Budget Decision Support Platform
-GT/GDeG/031/2025 | VITAL TERRA / Vastpoint POC
+GT/GDeG/031/2025 | TERRA VITAL / Vastpoint POC
 """
 
 import os
@@ -81,7 +81,7 @@ with st.sidebar:
     st.divider()
     st.caption("🏛️ Gauteng Province")
     st.caption("GT/GDeG/031/2025")
-    st.caption("VITAL TERRA / Vastpoint")
+    st.caption("TERRA VITAL / Vastpoint")
 
 # ── Page router ───────────────────────────────────────────────────────────────
 
@@ -99,7 +99,7 @@ elif selection == "Map View":
 
 elif selection == "GIS Viewer":
     st.title("🌐 GIS Viewer")
-    st.caption("STAM Geoportal — powered by VITAL TERRA")
+    st.caption("STAM Geoportal — powered by TERRA VITAL")
     st.components.v1.iframe(
         "https://tvapp.terra.group/geoportal/stam/public/",
         height=800,

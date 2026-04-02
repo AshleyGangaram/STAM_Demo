@@ -144,7 +144,7 @@ def generate_report_docx(report: AnalysisReport, projects: list) -> bytes:
     footer_para = doc.add_paragraph()
     footer_run = footer_para.add_run(
         "Produced by STAM — Spatial Transformation Appraisal Mechanism  |  "
-        "VITAL TERRA / Vastpoint  |  Gauteng Province"
+        "TERRA VITAL / Vastpoint  |  Gauteng Province"
     )
     footer_run.font.color.rgb = _GREY
     footer_run.font.size = Pt(8)
