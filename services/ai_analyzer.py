@@ -22,7 +22,7 @@ load_dotenv()
 
 _PROMPTS_DIR = os.path.join(os.path.dirname(__file__), "..", "prompts")
 
-ANALYSIS_MODEL = "claude-sonnet-4-6"
+ANALYSIS_MODEL = "claude-haiku-4-5-20251001"  # Haiku for speed (3-5s vs 30-60s for Sonnet)
 PARSING_MODEL = "claude-haiku-4-5-20251001"
 
 

@@ -208,23 +208,48 @@ def render() -> None:
         try:
             from services.report_gen import generate_report_pdf
             from services.ai_analyzer import generate_analysis_report
+            import time
 
-            with st.spinner("Generating AI report..."):
+            # Progress feedback
+            progress_placeholder = st.empty()
+            status_placeholder = st.empty()
+
+            try:
+                with status_placeholder.container():
+                    st.info("⏳ Analyzing spatial data and generating insights...")
+
+                start_time = time.time()
                 report_obj = generate_analysis_report(
                     municipality=projects[0].municipality or "Gauteng",
                     sector=active["key"],
                     projects=projects,
                     facilities=facilities,
                 )
+                elapsed = time.time() - start_time
+
+                with status_placeholder.container():
+                    st.success(f"✅ Analysis complete ({elapsed:.1f}s) — Rendering PDF...")
+
                 pdf_bytes = generate_report_pdf(report_obj, projects)
-            st.download_button(
-                "📥 Download PDF",
-                data=pdf_bytes,
-                file_name=f"STAM_{active['key']}_report.pdf",
-                mime="application/pdf",
-            )
-        except Exception as exc:
-            st.error(f"❌ Report generation failed: {str(exc)[:100]}")
+
+                status_placeholder.empty()
+                st.download_button(
+                    "📥 Download PDF",
+                    data=pdf_bytes,
+                    file_name=f"STAM_{active['key']}_report.pdf",
+                    mime="application/pdf",
+                )
+            except Exception as exc:
+                status_placeholder.empty()
+                error_msg = str(exc)[:150]
+                st.error(f"❌ Report generation failed:\n{error_msg}")
+                st.download_button("📥 Download PDF", data=b"", file_name="report.pdf", disabled=True)
+                # Show debug info
+                with st.expander("Debug info"):
+                    st.code(str(exc))
+
+        except ImportError as ie:
+            st.error(f"❌ Missing dependencies: {str(ie)}")
             st.download_button("📥 Download PDF", data=b"", file_name="report.pdf", disabled=True)
 
     with dl2:
