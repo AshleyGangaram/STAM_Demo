@@ -193,7 +193,17 @@ def render():
             qs = parse_qs(parsed.query)
             layer_name = qs.get("layers", qs.get("LAYERS", [""]))[0]
 
-            if st.button("🔗 Validate & Preview", type="primary"):
+            validate_btn = st.button("🔗 Validate & Preview", type="primary")
+
+            # Store validation state to prevent continuous reruns
+            if validate_btn:
+                st.session_state.wms_validated = True
+                st.session_state.wms_url = wms_url
+                st.session_state.wms_base = base_wms
+                st.session_state.wms_layer = layer_name
+
+            # Display WMS preview if validated
+            if st.session_state.get("wms_validated") and st.session_state.get("wms_url") == wms_url:
                 with st.spinner("Connecting to WMS service..."):
                     try:
                         import folium
@@ -201,7 +211,7 @@ def render():
                         from services.spatial import make_base_map
 
                         st.success(
-                            f"✓ WMS endpoint configured: `{wms_url}`\n\n"
+                            f"✓ WMS endpoint configured: `{st.session_state.wms_url}`\n\n"
                             "STAM is compatible with ESRI, GeoServer, and any "
                             "OGC-compliant WMS/WFS service."
                         )
@@ -209,11 +219,11 @@ def render():
                         m = make_base_map(center=[-26.1, 28.1], zoom=10)
 
                         folium.raster_layers.WmsTileLayer(
-                            url=base_wms,
-                            layers=layer_name or "Projects",
+                            url=st.session_state.wms_base,
+                            layers=st.session_state.wms_layer or "Projects",
                             fmt="image/png",
                             transparent=True,
-                            name=f"WMS: {layer_name or 'Layer'}",
+                            name=f"WMS: {st.session_state.wms_layer or 'Layer'}",
                             overlay=True,
                             control=True,
                         ).add_to(m)
@@ -225,14 +235,14 @@ def render():
 
                         log_action(
                             "CONFIGURE_WMS", "layer", "",
-                            {"url": wms_url, "layer": layer_name},
+                            {"url": st.session_state.wms_url, "layer": st.session_state.wms_layer},
                             user_role=st.session_state.get("user_role", "Analyst"),
                         )
 
                     except Exception as exc:
                         st.error(f"Could not connect to WMS service: {exc}")
-            else:
-                st.caption("Enter a WMS URL and click **Validate & Preview** to see the layer on the map.")
+            elif wms_url:
+                st.caption("Click **Validate & Preview** to see the layer on the map.")
 
     # ── Import log ────────────────────────────────────────────────────────────
     with tab_log:
