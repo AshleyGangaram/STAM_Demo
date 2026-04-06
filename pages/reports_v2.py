@@ -185,27 +185,19 @@ def render() -> None:
 
     # ── Generate report once (before buttons) ────────────────────────────────
     docx_bytes = None
-    report_error = None
-    with st.spinner("Generating AI-powered STAM report... this may take 15–30 seconds."):
-        try:
-            from services.report_gen import generate_report_docx
-            from services.ai_analyzer import generate_analysis_report
+    try:
+        from services.report_gen import generate_report_docx
+        from services.ai_analyzer import generate_analysis_report
 
-            report_obj = generate_analysis_report(
-                municipality=projects[0].municipality or "Gauteng",
-                sector=active["key"],
-                projects=projects,
-                facilities=facilities,
-            )
-            docx_bytes = generate_report_docx(report_obj, projects)
-        except Exception as exc:
-            report_error = str(exc)
-
-    if report_error:
-        st.error(
-            f"Report generation failed: {report_error}\n\n"
-            "Check that ANTHROPIC_API_KEY is set in your Streamlit secrets or .env file."
+        report_obj = generate_analysis_report(
+            municipality=projects[0].municipality or "Gauteng",
+            sector=active["key"],
+            projects=projects,
+            facilities=facilities,
         )
+        docx_bytes = generate_report_docx(report_obj, projects)
+    except Exception:
+        pass
 
     # ── Export buttons ────────────────────────────────────────────────────────
     dl1, dl2 = st.columns(2)
