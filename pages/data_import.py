@@ -75,12 +75,86 @@ def render():
                 "readiness_status", "municipality",
             ]
             df.columns = [c.strip().lower().replace(" ", "_") for c in df.columns]
-            mapping_ok = all(c in df.columns or c == "ward" for c in expected_cols)
-            if mapping_ok:
-                st.success("✓ All required columns found")
+            if "name" in df.columns and "project_name" not in df.columns:
+                df = df.rename(columns={"name": "project_name"})
+            missing_cols = [c for c in expected_cols if c not in df.columns and c != "ward"]
+            if not missing_cols:
+                st.success("All required columns found")
             else:
-                missing = [c for c in expected_cols if c not in df.columns]
-                st.warning(f"Missing columns: {missing}")
+                st.error(f"Missing required columns: {missing_cols}")
+
+            # ── Pre-import data quality scan ─────────────────────────────────
+            st.subheader("Data Quality Scan")
+            st.caption("Row-level checks run before import to catch issues early.")
+            issues: list[str] = []
+            issue_rows: list[dict] = []
+
+            for idx, row in df.iterrows():
+                row_num = int(idx) + 2  # 1-indexed + header
+
+                # Missing project_id
+                pid = str(row.get("project_id", "")).strip()
+                if not pid or pid == "nan":
+                    issues.append(f"Row {row_num}: Missing project_id")
+                    issue_rows.append({"Row": row_num, "Field": "project_id", "Issue": "Missing value", "Value": ""})
+
+                # Duplicate project_id within the file
+                if pid and pid != "nan":
+                    dupes = df[df["project_id"].str.strip() == pid]
+                    if len(dupes) > 1 and idx != dupes.index[0]:
+                        issues.append(f"Row {row_num}: Duplicate project_id '{pid}'")
+                        issue_rows.append({"Row": row_num, "Field": "project_id", "Issue": "Duplicate in file", "Value": pid})
+
+                # Missing or invalid coordinates
+                lat_str = str(row.get("latitude", "")).strip()
+                lon_str = str(row.get("longitude", "")).strip()
+                if not lat_str or lat_str == "nan" or not lon_str or lon_str == "nan":
+                    issues.append(f"Row {row_num}: Missing latitude/longitude")
+                    issue_rows.append({"Row": row_num, "Field": "latitude/longitude", "Issue": "Missing coordinates", "Value": f"{lat_str}, {lon_str}"})
+                else:
+                    try:
+                        lat_val = float(lat_str)
+                        lon_val = float(lon_str)
+                        if not (-35 <= lat_val <= -22):
+                            issues.append(f"Row {row_num}: Latitude {lat_val} outside South Africa range")
+                            issue_rows.append({"Row": row_num, "Field": "latitude", "Issue": "Out of range (-35 to -22)", "Value": lat_str})
+                        if not (16 <= lon_val <= 33):
+                            issues.append(f"Row {row_num}: Longitude {lon_val} outside South Africa range")
+                            issue_rows.append({"Row": row_num, "Field": "longitude", "Issue": "Out of range (16 to 33)", "Value": lon_str})
+                    except ValueError:
+                        issues.append(f"Row {row_num}: Non-numeric coordinates")
+                        issue_rows.append({"Row": row_num, "Field": "latitude/longitude", "Issue": "Non-numeric value", "Value": f"{lat_str}, {lon_str}"})
+
+                # Missing or invalid budget
+                budget_str = str(row.get("budget_rands", "")).strip()
+                if not budget_str or budget_str == "nan":
+                    issues.append(f"Row {row_num}: Missing budget_rands")
+                    issue_rows.append({"Row": row_num, "Field": "budget_rands", "Issue": "Missing value", "Value": ""})
+                else:
+                    try:
+                        float(budget_str.replace(",", ""))
+                    except ValueError:
+                        issues.append(f"Row {row_num}: Non-numeric budget '{budget_str}'")
+                        issue_rows.append({"Row": row_num, "Field": "budget_rands", "Issue": "Non-numeric value", "Value": budget_str})
+
+                # Missing municipality
+                muni = str(row.get("municipality", "")).strip()
+                if not muni or muni == "nan":
+                    issues.append(f"Row {row_num}: Missing municipality")
+                    issue_rows.append({"Row": row_num, "Field": "municipality", "Issue": "Missing value", "Value": ""})
+
+            valid_count = len(df) - len({r["Row"] for r in issue_rows})
+            scan_col1, scan_col2, scan_col3 = st.columns(3)
+            scan_col1.metric("Total Rows", len(df))
+            scan_col2.metric("Valid Rows", valid_count)
+            scan_col3.metric("Rows with Issues", len({r["Row"] for r in issue_rows}),
+                             delta_color="inverse" if issue_rows else "normal")
+
+            if issue_rows:
+                st.warning(f"{len(issue_rows)} issue(s) found — rows with errors will be skipped during import.")
+                st.dataframe(pd.DataFrame(issue_rows), use_container_width=True, hide_index=True)
+            else:
+                st.success("All rows passed validation — ready to import.")
 
             budget_year = st.text_input("Default Budget Year", value="2026/27")
 

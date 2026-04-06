@@ -77,20 +77,28 @@ def import_projects_from_excel(
 
     session = get_session()
     existing_ids = {r[0] for r in session.query(Project.project_id).all()}
+    seen_ids_in_file: set[str] = set()
 
     for idx, row in df.iterrows():
         row_num = int(idx) + 2  # 1-indexed, +1 for header
 
         # ── Validate project_id ──────────────────────────────────────────────
         pid = str(row.get("project_id", "")).strip()
-        if not pid:
+        if not pid or pid == "nan":
             errors.append(ImportError(row=row_num, field="project_id",
                                        message="project_id is required"))
             continue
 
         if pid in existing_ids:
-            warnings.append(f"Row {row_num}: project_id '{pid}' already exists — skipped.")
+            warnings.append(f"Row {row_num}: project_id '{pid}' already exists in database — skipped.")
             continue
+
+        if pid in seen_ids_in_file:
+            errors.append(ImportError(row=row_num, field="project_id",
+                                       message="Duplicate project_id in file",
+                                       value=pid))
+            continue
+        seen_ids_in_file.add(pid)
 
         # ── Validate coordinates ──────────────────────────────────────────────
         try:
