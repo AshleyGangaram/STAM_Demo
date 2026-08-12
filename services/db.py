@@ -93,6 +93,81 @@ class SavedQuery(Base):
     created_at    = Column(Text, default=_now)
 
 
+# ── Users (authentication) ────────────────────────────────────────────────────
+
+class User(Base):
+    __tablename__ = "users"
+
+    id            = Column(Text, primary_key=True, default=_uid)
+    username      = Column(Text, unique=True, nullable=False)
+    full_name     = Column(Text)
+    email         = Column(Text)
+    organisation  = Column(Text)
+    password_hash = Column(Text, nullable=False)   # pbkdf2_sha256$<iters>$<salt>$<hash>
+    role          = Column(Text, default="Analyst")  # see auth.ALL_ROLES
+    active        = Column(Integer, default=1)     # 0 = disabled, cannot sign in
+    created_at    = Column(Text, default=_now)
+    last_login_at = Column(Text)
+
+
+# ── IRM project worklist ──────────────────────────────────────────────────────
+
+class IRMProject(Base):
+    """
+    A National Treasury IRM project record awaiting location verification.
+
+    irm_latitude / irm_longitude hold the ORIGINAL coordinates as supplied by IRM
+    (often blank or a town centroid) — they are never overwritten, so the
+    "IRM said X, we corrected it to Y" trail stays provable.
+    """
+    __tablename__ = "irm_projects"
+
+    id             = Column(Text, primary_key=True, default=_uid)
+    project_code   = Column(Text, unique=True, nullable=False)
+    project_name   = Column(Text, nullable=False)
+    department     = Column(Text)
+    municipality   = Column(Text)
+    province       = Column(Text, default="Gauteng")
+    irm_latitude   = Column(Float)     # nullable — blank is the normal case
+    irm_longitude  = Column(Float)
+    irm_address    = Column(Text)      # free-text location string from IRM
+    budget_rands   = Column(Float)
+    financial_year = Column(Text)
+    source_file    = Column(Text)
+    imported_by    = Column(Text)
+    imported_at    = Column(Text, default=_now)
+
+
+# ── Location captures ─────────────────────────────────────────────────────────
+
+class LocationCapture(Base):
+    """
+    One digitised geometry for an IRM project. A project may hold many captures;
+    exactly one carries is_primary=1 and supplies the lat/lon exported to STAM.
+    """
+    __tablename__ = "location_captures"
+
+    id                  = Column(Text, primary_key=True, default=_uid)
+    project_code        = Column(Text, nullable=False)
+    project_name        = Column(Text)
+    irm_project_id      = Column(Text)    # IRMProject.id; NULL = ad-hoc entry
+    geometry_type       = Column(Text)    # Point | LineString | Polygon
+    geometry_geojson    = Column(Text)    # JSON geometry object
+    centroid_lat        = Column(Float)
+    centroid_lon        = Column(Float)
+    length_m            = Column(Float)   # LineString only
+    area_m2             = Column(Float)   # Polygon only
+    is_primary          = Column(Integer, default=0)
+    verification_status = Column(Text)
+    lifecycle_status    = Column(Text)
+    comments            = Column(Text)
+    search_query        = Column(Text)    # what the user searched to find the place
+    captured_by         = Column(Text)
+    deleted             = Column(Integer, default=0)   # soft delete
+    created_at          = Column(Text, default=_now)
+    updated_at          = Column(Text, default=_now, onupdate=_now)
+
+
 # ── Audit log ─────────────────────────────────────────────────────────────────
 
 class AuditLog(Base):
@@ -109,8 +184,18 @@ class AuditLog(Base):
 
 # ── Engine / Session ──────────────────────────────────────────────────────────
 
+# One engine (and therefore one connection pool) per database file. Pages call
+# get_session() many times per render; building a fresh engine each time meant a
+# new pool and a fresh connection every call.
+_ENGINES: dict[str, object] = {}
+
+
 def get_engine(db_path: str | None = None):
-    path = db_path or os.path.abspath(DB_PATH)
+    path = os.path.abspath(db_path or DB_PATH)
+    engine = _ENGINES.get(path)
+    if engine is not None:
+        return engine
+
     os.makedirs(os.path.dirname(path), exist_ok=True)
     engine = create_engine(f"sqlite:///{path}", echo=False)
 
@@ -121,6 +206,7 @@ def get_engine(db_path: str | None = None):
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
 
+    _ENGINES[path] = engine
     return engine
 
 

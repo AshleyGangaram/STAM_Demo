@@ -20,7 +20,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
-from services.db import init_db, get_session, Project, Facility, ScoreTemplate, AuditLog
+from services.db import (
+    init_db, get_session, Project, Facility, ScoreTemplate, AuditLog, IRMProject,
+)
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 
@@ -492,6 +494,130 @@ def write_projects_xlsx():
     print(f"  wrote {path} ({len(PROJECTS)} rows including 2 intentional errors)")
 
 
+# ── IRM location-capture demo data ────────────────────────────────────────────
+
+# Deliberately messy: blank coordinates, town centroids, and one point in the
+# wrong province — these are the cases the Location Capture page exists to fix.
+IRM_WORKLIST = [
+    # (code, name, department, municipality, lat, lon, address, budget, FY)
+    ("IRM-2026-0101", "Tembisa Clinic Upgrade", "Health", "Ekurhuleni",
+     None, None, "Tembisa, Ekurhuleni", 42_000_000, "2026/27"),
+    ("IRM-2026-0102", "Soweto Primary School Extension", "Education", "Johannesburg",
+     -26.2678, 27.8586, "Soweto", 68_500_000, "2026/27"),
+    ("IRM-2026-0103", "Mamelodi Community Library", "Sports, Arts & Culture", "Tshwane",
+     None, None, "Mamelodi East", 24_000_000, "2026/27"),
+    ("IRM-2026-0104", "R55 Road Rehabilitation Phase 2", "Roads & Transport", "Tshwane",
+     -25.8500, 28.1000, "R55 between Laudium and Centurion", 310_000_000, "2026/27"),
+    ("IRM-2026-0105", "Katlehong Housing Development", "Human Settlements", "Ekurhuleni",
+     -26.3300, 28.1500, "Katlehong", 480_000_000, "2027/28"),
+    ("IRM-2026-0106", "Vereeniging District Hospital Refurbishment", "Health", "Emfuleni",
+     None, None, "Vereeniging CBD", 156_000_000, "2026/27"),
+    ("IRM-2026-0107", "Alexandra Multi-Purpose Centre", "Social Development", "Johannesburg",
+     -26.1030, 28.1000, "Alexandra", 33_500_000, "2027/28"),
+    ("IRM-2026-0108", "Sebokeng Water Reticulation Upgrade", "Water & Sanitation", "Emfuleni",
+     None, None, "Sebokeng Zone 14", 92_000_000, "2026/27"),
+    ("IRM-2026-0109", "Krugersdorp Secondary School", "Education", "Mogale City",
+     -26.1000, 27.7700, "Krugersdorp", 74_000_000, "2027/28"),
+    ("IRM-2026-0110", "Springs Fire Station Rebuild", "Community Safety", "Ekurhuleni",
+     None, None, "Springs CBD", 28_000_000, "2026/27"),
+    ("IRM-2026-0111", "Hammanskraal Clinic", "Health", "Tshwane",
+     -25.4000, 28.2800, "Hammanskraal", 38_000_000, "2026/27"),
+    ("IRM-2026-0112", "Randfontein Taxi Rank Upgrade", "Roads & Transport", "Rand West City",
+     None, None, "Randfontein CBD", 45_000_000, "2027/28"),
+    ("IRM-2026-0113", "Kagiso Sports Complex", "Sports, Arts & Culture", "Mogale City",
+     -26.1600, 27.7800, "Kagiso Ext 6", 61_000_000, "2027/28"),
+    # Wrong province — a data-entry error for the demo to catch
+    ("IRM-2026-0114", "Diepsloot Early Childhood Centre", "Education", "Johannesburg",
+     -29.8587, 31.0218, "Diepsloot (coordinates appear to be in Durban)",
+     19_500_000, "2026/27"),
+    ("IRM-2026-0115", "Bronkhorstspruit Municipal Offices", "Infrastructure", "Tshwane",
+     None, None, "Bronkhorstspruit", 55_000_000, "2027/28"),
+]
+
+# Demo accounts. Passwords come from the environment where set, so a real
+# deployment never depends on these values.
+DEMO_USERS = [
+    ("capturer", "Nomsa Khumalo", "IRM Capturer", "National Treasury",
+     "STAM_CAPTURER_PASSWORD", "Capture!2026"),
+    ("analyst", "Thabo Molefe", "Analyst", "Gauteng Provincial Treasury",
+     "STAM_ANALYST_PASSWORD", "Analyst!2026"),
+]
+
+
+def seed_users():
+    """
+    Create the bootstrap admin plus the demo accounts, if they are missing.
+
+    Safe to call on every startup — existing users are left untouched, so a
+    changed password is never reset.
+    """
+    from services import auth
+
+    auth.ensure_default_admin()
+    created = []
+    for username, full_name, role, organisation, env_key, fallback in DEMO_USERS:
+        if auth.get_user(username) is not None:
+            continue
+        password = os.environ.get(env_key) or fallback
+        ok, _ = auth.create_user(
+            username=username, password=password, full_name=full_name,
+            role=role, organisation=organisation,
+        )
+        if ok:
+            created.append(username)
+    return created
+
+
+def seed_irm_worklist():
+    """Load the demo IRM worklist, skipping codes that already exist."""
+    session = get_session()
+    existing = {r[0] for r in session.query(IRMProject.project_code).all()}
+    added = 0
+    for (code, name, dept, muni, lat, lon, address, budget, fy) in IRM_WORKLIST:
+        if code in existing:
+            continue
+        session.add(IRMProject(
+            project_code=code, project_name=name, department=dept,
+            municipality=muni, province="Gauteng",
+            irm_latitude=lat, irm_longitude=lon, irm_address=address,
+            budget_rands=budget, financial_year=fy,
+            source_file="demo_seed", imported_by="system",
+        ))
+        added += 1
+    session.commit()
+    session.close()
+    return added
+
+
+def write_irm_worklist_xlsx():
+    """Write data/demo/irm_projects.xlsx for the worklist upload demo."""
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "IRM Projects"
+
+    header_fill = PatternFill("solid", fgColor="1F4E79")
+    header_font = Font(color="FFFFFF", bold=True)
+
+    headers = ["project_code", "project_name", "department", "municipality",
+               "latitude", "longitude", "address", "budget_rands", "financial_year"]
+    ws.append(headers)
+    for cell in ws[1]:
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+
+    for (code, name, dept, muni, lat, lon, address, budget, fy) in IRM_WORKLIST:
+        ws.append([code, name, dept, muni, lat, lon, address, budget, fy])
+
+    for column, width in zip("ABCDEFGHI", (16, 42, 24, 16, 12, 12, 44, 16, 12)):
+        ws.column_dimensions[column].width = width
+
+    path = os.path.join(DEMO_DIR, "irm_projects.xlsx")
+    wb.save(path)
+    print(f"  wrote {path} ({len(IRM_WORKLIST)} rows, "
+          f"{sum(1 for r in IRM_WORKLIST if r[4] is None)} with no coordinates)")
+
+
 def seed_database():
     engine = init_db()
     session = get_session(engine)
@@ -549,7 +675,15 @@ if __name__ == "__main__":
     write_population_geojson()
     print("Writing projects.xlsx...")
     write_projects_xlsx()
+    print("Writing irm_projects.xlsx...")
+    write_irm_worklist_xlsx()
     print("Seeding database...")
     seed_database()
+    print("Seeding users...")
+    created = seed_users()
+    print(f"  users ready (created: {', '.join(created) if created else 'none, already present'})")
+    print("Seeding IRM worklist...")
+    print(f"  added {seed_irm_worklist()} IRM project(s)")
     print()
     print("Done. Run: streamlit run app.py")
+    print("Sign in as admin / ChangeMe!2026 (or set STAM_ADMIN_PASSWORD).")

@@ -35,3 +35,10 @@ center_lat = -26.05
 center_lon = 28.05
 default_zoom = 9
 gauteng_bbox = [-28.0, 26.5, -25.0, 29.5]
+
+[capture]
+# IRM Location Capture page
+geocoder_provider = "google"     # "google" | "nominatim" (env CAPTURE_GEOCODER wins)
+search_zoom       = 17           # zoom applied after picking a search result
+satellite_default = true         # open the capture map on imagery
+sa_bbox           = [-35.0, 16.0, -22.0, 33.5]   # min_lat, min_lon, max_lat, max_lon

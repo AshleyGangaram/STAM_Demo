@@ -53,8 +53,21 @@ PROJECT_ICONS: dict[str, str] = {
     "industrial": "industry",
 }
 
+# IRM location-capture colours, keyed by verification status
+CAPTURE_COLOURS: dict[str, str] = {
+    "Verified":         "#1a7431",   # dark green
+    "Corrected":        "#1F4E79",   # STAM blue
+    "Approximate":      "#f5a623",   # amber
+    "Unable to Locate": "#d0021b",   # red
+    "Duplicate Record": "#7b1fa2",   # purple
+}
+
 GAUTENG_CENTER = [-26.05, 28.05]
 GAUTENG_ZOOM = 9
+
+# Tooltips on captured shapes carry this prefix so a map click can be resolved
+# back to a LocationCapture row via st_folium's last_object_clicked_tooltip.
+CAPTURE_TOOLTIP_PREFIX = "capture:"
 
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -66,23 +79,39 @@ def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return R * 2 * math.asin(math.sqrt(a))
 
 
-def make_base_map(center: list | None = None, zoom: int = GAUTENG_ZOOM) -> folium.Map:
-    """Return a Folium map centred on Gauteng with standard controls."""
-    m = folium.Map(
-        location=center or GAUTENG_CENTER,
-        zoom_start=zoom,
-        tiles=None,
-    )
-    # Base layers
-    folium.TileLayer("CartoDB positron", name="CartoDB Light", control=True).add_to(m)
-    folium.TileLayer("OpenStreetMap", name="OpenStreetMap", control=True).add_to(m)
-    folium.TileLayer(
+def _satellite_layer() -> folium.TileLayer:
+    return folium.TileLayer(
         tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         attr="Esri",
         name="Satellite",
         overlay=False,
         control=True,
-    ).add_to(m)
+        max_zoom=21,
+    )
+
+
+def make_base_map(center: list | None = None, zoom: int = GAUTENG_ZOOM,
+                  satellite_first: bool = False) -> folium.Map:
+    """
+    Return a Folium map centred on Gauteng with standard controls.
+
+    Folium shows whichever base layer is added first, so `satellite_first=True`
+    opens on imagery — which is what makes a site identifiable when digitising.
+    """
+    m = folium.Map(
+        location=center or GAUTENG_CENTER,
+        zoom_start=zoom,
+        tiles=None,
+        max_zoom=21,
+    )
+    # Base layers — order decides the default
+    if satellite_first:
+        _satellite_layer().add_to(m)
+    folium.TileLayer("CartoDB positron", name="CartoDB Light", control=True).add_to(m)
+    folium.TileLayer("OpenStreetMap", name="OpenStreetMap", control=True,
+                     max_zoom=19).add_to(m)
+    if not satellite_first:
+        _satellite_layer().add_to(m)
 
     # Controls
     m.add_child(MeasureControl(position="topright"))
@@ -236,6 +265,145 @@ def add_project_buffer(m: folium.Map, lat: float, lon: float,
         weight=2,
         dash_array="8 4",
         tooltip=f"{radius_km} km buffer{': ' + label if label else ''}",
+    ).add_to(m)
+    return m
+
+
+def add_captures_layer(m: folium.Map, captures: list[Any],
+                       group_name: str = "Captured Locations") -> folium.Map:
+    """
+    Draw saved IRM location captures, coloured by verification status.
+
+    The tooltip is the capture id prefixed with CAPTURE_TOOLTIP_PREFIX so that a
+    click can be resolved back to a record via st_folium's
+    `last_object_clicked_tooltip`.
+    """
+    group = folium.FeatureGroup(name=group_name, show=True)
+
+    for c in captures:
+        raw = getattr(c, "geometry_geojson", "") or ""
+        try:
+            geometry = json.loads(raw)
+        except (ValueError, TypeError):
+            continue
+        if not geometry.get("coordinates"):
+            continue
+
+        status = getattr(c, "verification_status", "") or ""
+        colour = CAPTURE_COLOURS.get(status, "#1F4E79")
+        capture_id = getattr(c, "id", "")
+        code = getattr(c, "project_code", "")
+        name = getattr(c, "name", None) or getattr(c, "project_name", "")
+        primary = " ★ primary" if getattr(c, "is_primary", 0) else ""
+        tooltip = f"{CAPTURE_TOOLTIP_PREFIX}{capture_id}"
+
+        measure = ""
+        if getattr(c, "length_m", None):
+            measure = f"Length: {c.length_m:,.0f} m<br>"
+        elif getattr(c, "area_m2", None):
+            measure = f"Area: {c.area_m2:,.0f} m² ({c.area_m2 / 10_000:,.2f} ha)<br>"
+
+        popup_html = (
+            f"<b>[{code}] {name}</b>{primary}<br>"
+            f"Verification: <b style='color:{colour}'>{status}</b><br>"
+            f"Lifecycle: {getattr(c, 'lifecycle_status', '')}<br>"
+            f"{measure}"
+            f"Captured by: {getattr(c, 'captured_by', '')}<br>"
+            f"<i>Click the shape to edit it.</i>"
+        )
+        popup = folium.Popup(popup_html, max_width=300)
+
+        if geometry.get("type") == "Point":
+            lon, lat = geometry["coordinates"][0], geometry["coordinates"][1]
+            folium.CircleMarker(
+                location=[lat, lon],
+                radius=10 if primary else 8,
+                color=colour,
+                fill=True,
+                fill_color=colour,
+                fill_opacity=0.85,
+                weight=3 if primary else 2,
+                popup=popup,
+                tooltip=tooltip,
+            ).add_to(group)
+        else:
+            folium.GeoJson(
+                {"type": "Feature", "geometry": geometry, "properties": {}},
+                style_function=lambda _f, colour=colour, primary=primary: {
+                    "color": colour,
+                    "weight": 5 if primary else 3,
+                    "fillColor": colour,
+                    "fillOpacity": 0.25,
+                    "opacity": 0.9,
+                },
+                popup=popup,
+                tooltip=tooltip,
+            ).add_to(group)
+
+    group.add_to(m)
+    return m
+
+
+DRAFT_COLOUR = "#ff6f00"   # amber — an unsaved shape
+
+
+def add_draft_layer(m: folium.Map, geometry: dict | None,
+                    label: str = "Unsaved shape") -> folium.Map:
+    """
+    Redraw the shape the user is currently working on.
+
+    Leaflet.Draw keeps a new shape only in the browser, so it vanishes the moment
+    Streamlit reruns and rebuilds the map. Painting it back as its own layer is
+    what makes a drawn point or polygon stay put until it is saved or cleared.
+    """
+    if not geometry or not geometry.get("coordinates"):
+        return m
+
+    group = folium.FeatureGroup(name="Unsaved shape", show=True)
+    tooltip = f"{label} — not yet saved"
+
+    if geometry.get("type") == "Point":
+        lon, lat = geometry["coordinates"][0], geometry["coordinates"][1]
+        folium.CircleMarker(
+            location=[lat, lon],
+            radius=11,
+            color=DRAFT_COLOUR,
+            fill=True,
+            fill_color=DRAFT_COLOUR,
+            fill_opacity=0.9,
+            weight=3,
+            tooltip=tooltip,
+        ).add_to(group)
+    else:
+        folium.GeoJson(
+            {"type": "Feature", "geometry": geometry, "properties": {}},
+            style_function=lambda _f: {
+                "color": DRAFT_COLOUR,
+                "weight": 4,
+                "fillColor": DRAFT_COLOUR,
+                "fillOpacity": 0.20,
+                "opacity": 0.95,
+                "dashArray": "8 5",
+            },
+            tooltip=tooltip,
+        ).add_to(group)
+
+    group.add_to(m)
+    return m
+
+
+def add_irm_original_marker(m: folium.Map, lat: float, lon: float,
+                            label: str = "") -> folium.Map:
+    """Mark the original (uncorrected) IRM coordinate so the user sees the delta."""
+    folium.Marker(
+        location=[lat, lon],
+        popup=folium.Popup(
+            f"<b>Original IRM location</b><br>{label}<br>"
+            f"{lat:.5f}, {lon:.5f}<br><i>This is the value being corrected.</i>",
+            max_width=260,
+        ),
+        tooltip="Original IRM location",
+        icon=folium.Icon(color="lightgray", icon="flag", prefix="fa"),
     ).add_to(m)
     return m
 
